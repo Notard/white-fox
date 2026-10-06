@@ -1,0 +1,180 @@
+<title>White Fox 움직이는 것들</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 레이아웃: 다른 문서와 같은 기둥(46rem) + 카드·표 64rem. 칸마다 고유색(얼음 하늘색, 무너짐 갈색, 스위치 분홍, 문 보라, 계단 돌색) */
+:root {
+  --bg: #f4f8fb; --surface: #ffffff; --ink: #22303f; --muted: #5c6b7b; --line: #d8e2ea; --code-bg: #eef3f7;
+  --accent: #2f7fd0; --accent-soft: #e2eefa;
+  --grass: #4f9a3f; --grass-soft: #e3f1dc;
+  --ice: #5bb8f5; --ice-soft: #e4f4fe; --crumble: #a0703f; --crumble-soft: #f5ebe0;
+  --switch: #e0609a; --switch-soft: #fce6f0; --door: #7d68c9; --door-soft: #eeeafb; --stairs: #8a8fa0; --stairs-soft: #eceef2;
+  --bad: #c43d3d;
+  --font-display: "Jua", "Noto Sans KR", system-ui, sans-serif;
+  --font-body: "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131b23; --surface: #1b2530; --ink: #e4ecf3; --muted: #9fb0c0; --line: #2d3a47; --code-bg: #16202a;
+    --accent: #6db0f0; --accent-soft: #172a3d; --grass: #74c260; --grass-soft: #1f3320;
+    --ice: #7ccaf7; --ice-soft: #16303f; --crumble: #c99366; --crumble-soft: #33261a;
+    --switch: #f08ab6; --switch-soft: #3a1f2c; --door: #a594e6; --door-soft: #272240; --stairs: #a5aabb; --stairs-soft: #252a33;
+    --bad: #f07a7a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131b23; --surface: #1b2530; --ink: #e4ecf3; --muted: #9fb0c0; --line: #2d3a47; --code-bg: #16202a;
+  --accent: #6db0f0; --accent-soft: #172a3d; --grass: #74c260; --grass-soft: #1f3320;
+  --ice: #7ccaf7; --ice-soft: #16303f; --crumble: #c99366; --crumble-soft: #33261a;
+  --switch: #f08ab6; --switch-soft: #3a1f2c; --door: #a594e6; --door-soft: #272240; --stairs: #a5aabb; --stairs-soft: #252a33;
+  --bad: #f07a7a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15.5px; line-height: 1.7; }
+.wrap { max-width: 64rem; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px; display: grid; gap: 52px; }
+.col { max-width: 46rem; }
+h1, h2 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.8rem); line-height: 1.2; }
+h2 { font-size: 1.6rem; line-height: 1.3; }
+h3 { margin: 0; }
+p { margin: 0; }
+section { display: grid; gap: 18px; }
+.eyebrow { font-size: 0.78rem; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; }
+.lead { font-size: 1.08rem; color: var(--muted); max-width: 42rem; }
+.note { font-size: 0.85rem; color: var(--muted); }
+code { font-family: var(--font-mono); font-size: 0.88em; }
+:not(pre) > code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; }
+pre { margin: 0; background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.55; }
+header { display: grid; gap: 14px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--muted); font-size: 0.88rem; }
+.meta b { color: var(--ink); font-weight: 500; }
+ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(14.5rem, 1fr)); gap: 14px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: 12px; padding: 16px 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.tile header { display: flex; align-items: center; gap: 10px; }
+.tile h3 { font-family: var(--font-display); font-weight: 400; font-size: 1.3rem; }
+.sym { font-family: var(--font-mono); font-weight: 600; font-size: 0.85rem; background: var(--soft); color: var(--c); border-radius: 6px; padding: 0 8px; margin-left: auto; }
+.tile ul { font-size: 0.9rem; }
+.strip { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); }
+.c { width: 30px; height: 30px; border-radius: 6px; display: grid; place-items: center; font-size: 0.75rem; font-weight: 700; color: #fff; flex: none; }
+.c.g { background: var(--grass); } .c.i { background: var(--ice); } .c.k { background: var(--crumble); } .c.h { background: transparent; border: 2px dashed var(--accent); }
+.c.s { background: var(--switch); } .c.d { background: var(--door); } .c.t { background: var(--stairs); } .c.r { background: var(--stairs); color: var(--ink); }
+.arrow { color: var(--muted); font-weight: 700; padding-inline: 2px; }
+.t-ice { --c: var(--ice); --soft: var(--ice-soft); }
+.t-crumble { --c: var(--crumble); --soft: var(--crumble-soft); }
+.t-switch { --c: var(--switch); --soft: var(--switch-soft); }
+.t-door { --c: var(--door); --soft: var(--door-soft); }
+.t-stairs { --c: var(--stairs); --soft: var(--stairs-soft); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 0.78rem; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; background: var(--code-bg); }
+td code { white-space: nowrap; }
+
+.todo { list-style: none; padding: 0; margin: 0; display: grid; }
+.todo > li { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr); gap: 10px; padding-block: 9px; border-top: 1px solid var(--line); }
+.todo > li.group { display: block; border: 0; font-family: var(--font-display); font-size: 1.1rem; margin-top: 10px; }
+.box { width: 1.15rem; height: 1.15rem; border: 2px solid var(--line); border-radius: 5px; margin-top: 4px; display: grid; place-items: center; font-size: 0.8rem; color: #fff; }
+.todo li.done .box { background: var(--grass); border-color: var(--grass); }
+.todo li.done .box::after { content: "✓"; }
+.todo .t { display: grid; gap: 2px; min-width: 0; }
+.todo .t span { font-size: 0.86rem; color: var(--muted); }
+</style>
+<div class="wrap">
+
+<header class="col">
+  <div class="eyebrow">WHITE FOX · 움직이는 것들과 연출</div>
+  <h1>눈덩이, 부엉이, 떠다니는 발판</h1>
+  <p class="lead">여우가 한 번 행동할 때마다 적과 발판도 한 칸씩 움직이는 <b>턴 방식</b>입니다. 반사신경이 아니라 타이밍을 읽는 퍼즐이 되고, 맵툴의 "클리어 가능" 검증도 그대로 동작합니다. 걸음·착지·보석·클리어 연출도 함께 넣습니다.</p>
+  <div class="meta"><span>작성 <b>2026-10-06</b></span><span>대상 <b>FoxGame (Unity 6000.5)</b></span><span>상태 <b>구현 중</b></span></div>
+</header>
+
+<section>
+  <div class="col" style="display:grid;gap:10px">
+    <div class="eyebrow">규칙</div>
+    <h2>한 턴에 일어나는 일</h2>
+  </div>
+  <div class="tiles">
+    <article class="tile t-stairs">
+      <header><h3>여우 행동 = 1턴</h3><span class="sym">턴</span></header>
+      <ul>
+        <li>걷기, 점프, 부딪히기, 그리고 새로 생긴 <b>Q 기다리기</b>가 모두 한 턴입니다.</li>
+        <li>얼음에서 여러 칸 미끄러져도 한 턴입니다.</li>
+        <li>순서: 여우 이동 → 발판 이동(타고 있으면 같이) → 적 이동 → 부딪혔는지 확인.</li>
+      </ul>
+    </article>
+    <article class="tile t-door">
+      <header><h3>눈덩이 · 부엉이</h3><span class="sym">적</span></header>
+      <ul>
+        <li>맵툴에서 그린 길을 끝까지 갔다가 되돌아오기를 반복합니다.</li>
+        <li><b>눈덩이</b>는 땅 위로만, <b>부엉이</b>는 날아서 구멍 위로도 다닙니다.</li>
+        <li>적이 있는 칸으로 들어가거나, 적이 여우 칸으로 들어오면 실패입니다. 점프로 적을 넘는 것은 괜찮습니다.</li>
+      </ul>
+    </article>
+    <article class="tile t-ice">
+      <header><h3>떠다니는 발판</h3><span class="sym">발판</span></header>
+      <ul>
+        <li>구멍 칸으로 이루어진 길을 왕복합니다. 발판이 있는 구멍 칸은 땅처럼 설 수 있습니다.</li>
+        <li>발판 위에 서 있으면 발판과 함께 다음 칸으로 실려 갑니다.</li>
+        <li>발판이 없는 구멍으로 가면 지금처럼 떨어집니다.</li>
+      </ul>
+    </article>
+    <article class="tile t-switch">
+      <header><h3>연출</h3><span class="sym">✦</span></header>
+      <ul>
+        <li>걸을 때 발자국(풀이 눌린 자국)이 남았다가 천천히 사라집니다.</li>
+        <li>점프 착지 때 흙먼지가 피어오릅니다.</li>
+        <li>보석 주변에 작은 반짝임이 계속 일어납니다.</li>
+        <li>클리어하면 카메라가 여우에게 다가갑니다.</li>
+        <li>적과 발판이 다닐 길은 바닥에 옅은 점으로 보여 줍니다.</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section class="col">
+  <div class="eyebrow">파일 형식</div>
+  <h2>스테이지 파일 버전 4: movers</h2>
+<pre>"movers": [
+  { "kind": "snowball", "path": [ {"x":2,"y":0}, {"x":2,"y":1}, {"x":2,"y":2} ] },
+  { "kind": "owl",      "path": [ ... ] },
+  { "kind": "platform", "path": [ ... ] }
+]</pre>
+  <p class="note">길은 이웃한 칸을 차례로 이은 목록입니다. 첫 칸에서 출발해 끝까지 갔다가 되돌아옵니다. 눈덩이 길은 설 수 있는 땅, 발판 길은 구멍 칸, 부엉이 길은 맵 안 아무 칸이면 됩니다. 버전 3 이하 파일은 움직이는 것이 없는 것으로 읽습니다.</p>
+</section>
+
+<section class="col">
+  <div class="eyebrow">맵툴</div>
+  <h2>길 그리기</h2>
+  <ul>
+    <li>오른쪽 <b>움직이는 것</b>에서 [+ 눈덩이] [+ 부엉이] [+ 발판]을 누르면 길 그리기가 시작됩니다.</li>
+    <li>칸을 차례로 누르면 길이 이어지고, 마지막 칸을 다시 누르면 지워집니다. Esc나 [완료]로 끝냅니다.</li>
+    <li>그리드에는 길이 색 선으로, 출발 칸에는 표시가 그려집니다. 목록에서 고르거나 지울 수 있습니다.</li>
+    <li>검증은 적과 발판의 움직임(턴)까지 따져 한 판에 모든 보석을 모을 수 있는지 봅니다.</li>
+  </ul>
+</section>
+
+<section class="col">
+  <div class="eyebrow">할일</div>
+  <h2>만드는 순서</h2>
+  <ul class="todo">
+    <li class="group">규칙</li>
+    <li class="done"><span class="box"></span><div class="t"><b>데이터</b><span>버전 4 movers, 왕복 위치 계산, JSON 검사</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>턴 규칙</b><span>발판 위 설 수 있음, 실려 가기, 적 충돌, 기다리기</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>검증</b><span>턴(주기)까지 포함한 탐색, 길 검사</span></div></li>
+    <li class="group">게임</li>
+    <li class="done"><span class="box"></span><div class="t"><b>모델</b><span>Blender 눈덩이·부엉이·발판, 셀 셰이딩</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>턴 진행</b><span>적·발판 움직임 연출, 실려 가기, 부딪히면 실패, Q 기다리기</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>연출</b><span>발자국, 착지 먼지, 보석 반짝임, 클리어 카메라, 길 점</span></div></li>
+    <li class="group">맵툴 · 마무리</li>
+    <li class="done"><span class="box"></span><div class="t"><b>맵툴</b><span>움직이는 것 추가·길 그리기·삭제·표시</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>예제 스테이지</b><span>10 눈덩이 길, 11 부엉이 순찰, 12 떠다니는 발판</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>테스트 · 빌드</b><span>규칙 단위 테스트, 게임 안 동작, 캡처</span></div></li>
+  </ul>
+</section>
+
+</div>

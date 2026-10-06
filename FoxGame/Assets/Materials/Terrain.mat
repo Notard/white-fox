@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Terrain
+  m_Shader: {fileID: 4800000, guid: e542fad8bb7b64848bbe471f50417598, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _CliffTex:
+        m_Texture: {fileID: 2800000, guid: c9bb4e4e0e13e1c47ba286fbe49a2006, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CrackTex:
+        m_Texture: {fileID: 2800000, guid: 029e1db1e900ec640b4f3cfc3e895a1b, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GrassTex:
+        m_Texture: {fileID: 2800000, guid: ba18837ac6bb9de4fb8039893d372b42, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _IceTex:
+        m_Texture: {fileID: 2800000, guid: 33bc0694a1aef9449b254f1611c9d0e6, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _CellSize: 1.5
+    - _CliffScale: 0.6
+    - _GridStrength: 0.045
+    - _IceGloss: 0.9
+    - _OutlineWidth: 0.0022
+    - _RimStrength: 0.18
+    - _ShadeSoftness: 0.03
+    - _ShadeThreshold: 0.5
+    - _TopScale: 0.45
+    - _TopSharpness: 0.35
+    m_Colors:
+    - _GridOrigin: {r: 0, g: 0, b: 0, a: 0}
+    - _OutlineColor: {r: 0.23999995, g: 0.19999996, b: 0.19999996, a: 1}
+    - _RimColor: {r: 1, g: 0.96999997, b: 0.9, a: 1}
+    - _ShadowTint: {r: 0.62, g: 0.68, b: 0.9, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

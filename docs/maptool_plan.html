@@ -1,0 +1,549 @@
+<title>White Fox 맵툴 계획</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 레이아웃: 한 줄 기둥(본문 46rem) + 시안/표처럼 넓은 블록만 64rem까지 확장 */
+:root {
+  --bg: #f4f8fb;
+  --surface: #ffffff;
+  --ink: #22303f;
+  --muted: #5c6b7b;
+  --line: #d8e2ea;
+  --grass: #4f9a3f;
+  --grass-soft: #e3f1dc;
+  --sky: #2f7fd0;
+  --sky-soft: #e2eefa;
+  --dirt: #9a6337;
+  --stone: #8a8fa0;
+  --hole: #b9d6ee;
+  --gem: #2ba3ef;
+  --warn: #b86e00;
+  --warn-soft: #fff1d6;
+  --bad: #c43d3d;
+  --bad-soft: #fde5e5;
+  --code-bg: #eef3f7;
+  --font-display: "Jua", "Noto Sans KR", system-ui, sans-serif;
+  --font-body: "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131b23; --surface: #1b2530; --ink: #e4ecf3; --muted: #9fb0c0; --line: #2d3a47;
+    --grass: #74c260; --grass-soft: #1f3320; --sky: #6db0f0; --sky-soft: #172a3d;
+    --dirt: #c48a5a; --stone: #9aa0b2; --hole: #24405a; --gem: #57bdf7;
+    --warn: #f0b04a; --warn-soft: #3a2c12; --bad: #f07a7a; --bad-soft: #3d1c1c; --code-bg: #16202a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131b23; --surface: #1b2530; --ink: #e4ecf3; --muted: #9fb0c0; --line: #2d3a47;
+  --grass: #74c260; --grass-soft: #1f3320; --sky: #6db0f0; --sky-soft: #172a3d;
+  --dirt: #c48a5a; --stone: #9aa0b2; --hole: #24405a; --gem: #57bdf7;
+  --warn: #f0b04a; --warn-soft: #3a2c12; --bad: #f07a7a; --bad-soft: #3d1c1c; --code-bg: #16202a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15.5px; line-height: 1.7; }
+.wrap { max-width: 64rem; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px; display: grid; gap: 56px; }
+.col { max-width: 46rem; }
+h1, h2 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.8rem); line-height: 1.2; }
+h2 { font-size: 1.6rem; line-height: 1.3; }
+h3 { font-size: 1.05rem; margin: 0; }
+p { margin: 0; }
+.eyebrow { font-size: 0.78rem; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; }
+section { display: grid; gap: 18px; }
+.lead { font-size: 1.08rem; color: var(--muted); max-width: 40rem; }
+code, .mono { font-family: var(--font-mono); font-size: 0.88em; }
+:not(pre) > code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; }
+pre { margin: 0; background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.55; }
+ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+
+/* 헤더 */
+header { display: grid; gap: 14px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--muted); font-size: 0.88rem; }
+.meta b { color: var(--ink); font-weight: 500; }
+
+/* 요약 3칸 */
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 14px; }
+.summary div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 6px; min-width: 0; }
+.summary h3 { font-family: var(--font-display); font-weight: 400; font-size: 1.15rem; }
+.summary p { color: var(--muted); font-size: 0.92rem; }
+
+/* 맵툴 시안 */
+.editor { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.editor-bar { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--line); background: var(--code-bg); font-size: 0.85rem; color: var(--muted); flex-wrap: wrap; }
+.editor-bar strong { color: var(--ink); font-weight: 500; }
+.editor-bar .spacer { flex: 1; }
+.editor-body { display: grid; grid-template-columns: 11rem minmax(0, 1fr) 17rem; }
+@media (max-width: 820px) { .editor-body { grid-template-columns: 1fr; } }
+.pane { padding: 16px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.pane + .pane { border-left: 1px solid var(--line); }
+@media (max-width: 820px) { .pane + .pane { border-left: 0; border-top: 1px solid var(--line); } }
+.pane-title { font-size: 0.75rem; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; }
+.brushes { display: grid; gap: 6px; }
+@media (max-width: 820px) { .brushes { grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); } }
+.brush { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border: 1.5px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--ink); font: inherit; font-size: 0.9rem; cursor: pointer; text-align: left; }
+.brush:hover { border-color: var(--sky); }
+.brush[aria-pressed="true"] { border-color: var(--sky); background: var(--sky-soft); font-weight: 700; }
+.brush:focus-visible, .cell:focus-visible, .btn:focus-visible, select:focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; }
+.brush kbd { margin-left: auto; font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+.sw { width: 18px; height: 18px; border-radius: 5px; flex: none; display: grid; place-items: center; font-size: 11px; }
+
+.grid-area { display: grid; place-items: center; gap: 10px; padding: 22px 16px; overflow-x: auto; min-width: 0; }
+.board { display: grid; gap: 5px; padding: 12px; background: var(--hole); border-radius: 12px; }
+.cell { width: clamp(2.6rem, 9vw, 4.2rem); aspect-ratio: 1; max-width: 100%; border: 0; border-radius: 8px; cursor: pointer; position: relative; display: grid; place-items: center; font-family: var(--font-display); font-size: 1.1rem; color: #fff; padding: 0; }
+.cell.ground { background: var(--grass); box-shadow: inset 0 -5px 0 var(--dirt); }
+.cell.hole { background: transparent; border: 2px dashed var(--sky); color: var(--sky); }
+.cell.obstacle { background: var(--grass); box-shadow: inset 0 -5px 0 var(--dirt); }
+.cell.obstacle::after { content: ""; width: 52%; height: 44%; background: var(--stone); border-radius: 50% 50% 40% 40%; }
+.cell .gem { width: 36%; aspect-ratio: 1; background: var(--gem); transform: rotate(45deg); border-radius: 3px; box-shadow: 0 0 0 2px #ffffffaa; }
+.cell .start { font-size: 0.85rem; background: #ffffffe6; color: var(--grass); border-radius: 6px; padding: 0 6px; line-height: 1.5; font-family: var(--font-body); font-weight: 700; }
+.cell.unreachable { outline: 3px solid var(--bad); outline-offset: -3px; }
+.coords { font-size: 0.78rem; color: var(--muted); }
+
+.field { display: grid; gap: 4px; font-size: 0.85rem; }
+.field label { color: var(--muted); }
+.field input, .field select { font: inherit; padding: 6px 9px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--ink); min-width: 0; }
+.size-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px; align-items: center; }
+.checks { display: grid; gap: 6px; list-style: none; padding: 0; font-size: 0.85rem; }
+.checks li { display: grid; grid-template-columns: 1.3rem 1fr; gap: 4px; padding: 6px 8px; border-radius: 7px; }
+.checks .ok { background: var(--grass-soft); }
+.checks .warn { background: var(--warn-soft); }
+.checks .bad { background: var(--bad-soft); }
+.checks .ok::before { content: "✓"; color: var(--grass); font-weight: 700; }
+.checks .warn::before { content: "!"; color: var(--warn); font-weight: 700; }
+.checks .bad::before { content: "✕"; color: var(--bad); font-weight: 700; }
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.btn { font: inherit; font-size: 0.85rem; padding: 7px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.btn.primary { background: var(--sky); border-color: var(--sky); color: #fff; font-weight: 700; }
+.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+.json-out { font-size: 0.78rem; max-height: 15rem; }
+.note { font-size: 0.82rem; color: var(--muted); }
+.toast { font-size: 0.82rem; color: var(--grass); min-height: 1.3em; }
+
+/* 표 */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 0.78rem; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; background: var(--code-bg); }
+td code { white-space: nowrap; }
+.tag { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; }
+.tag.new { background: var(--grass-soft); color: var(--grass); }
+.tag.chg { background: var(--sky-soft); color: var(--sky); }
+.tag.del { background: var(--warn-soft); color: var(--warn); }
+
+/* 단계 */
+.steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 0; counter-reset: step; }
+.steps > li { display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); gap: 14px; padding-block: 16px; border-top: 1px solid var(--line); }
+.steps > li:first-child { border-top: 0; }
+.steps > li::before { counter-increment: step; content: counter(step); font-family: var(--font-display); font-size: 1.4rem; width: 2.4rem; height: 2.4rem; border-radius: 50%; display: grid; place-items: center; background: var(--grass-soft); color: var(--grass); }
+.steps .body { display: grid; gap: 6px; min-width: 0; }
+.steps .done { font-size: 0.85rem; color: var(--muted); }
+.steps .done b { color: var(--ink); font-weight: 500; }
+
+/* 결정 */
+.decisions { display: grid; gap: 12px; }
+.decision { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--warn); border-radius: 10px; padding: 14px 18px; display: grid; gap: 6px; min-width: 0; }
+.decision .q { font-weight: 700; }
+.decision .rec { font-size: 0.92rem; }
+.decision .rec b { color: var(--grass); }
+.decision .alt { font-size: 0.85rem; color: var(--muted); }
+.decision.done-d { border-left-color: var(--grass); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.88rem; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+<header class="col">
+  <div class="eyebrow">WHITE FOX · 기능 계획서</div>
+  <h1>Unity 맵툴과 JSON 맵 불러오기</h1>
+  <p class="lead">Unity 에디터 안에서 칸을 칠해 스테이지 맵을 만들고 JSON 파일로 저장하면, 게임이 스테이지 1부터 차례로 불러와 타일맵을 만듭니다. 지금은 맵이 <code>BoardLayout.asset</code> 하나에 고정되어 있는데, 이것을 스테이지 파일 기반으로 바꾸는 작업입니다.</p>
+  <div class="meta"><span>작성 <b>2026-10-06</b></span><span>대상 <b>FoxGame (Unity 6000.5, URP)</b></span><span>상태 <b>구현 완료 · 테스트 25개 통과</b></span></div>
+</header>
+
+<section>
+  <div class="summary">
+    <div><h3>만드는 것</h3><p>에디터 창 <b>FoxGame › 맵툴</b>. 스테이지를 추가·정렬하고, 붓으로 칸을 칠하고, 검증해서 저장합니다.</p></div>
+    <div><h3>바뀌는 것</h3><p>게임이 <code>Resources/Stages/stage_NN.json</code>을 순서대로 읽어 스테이지 1 → n을 진행합니다.</p></div>
+    <div><h3>지키는 것</h3><p>이동 규칙은 게임과 맵툴이 같은 코드를 씁니다. 맵툴이 "클리어 가능"이라 하면 게임에서도 됩니다.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="col" style="display:grid;gap:10px">
+    <div class="eyebrow">맵툴 화면 시안</div>
+    <h2>칸을 칠하면 바로 검증됩니다</h2>
+    <p>아래는 Unity 에디터 창의 시안입니다. 실제로 눌러 볼 수 있습니다. 붓을 고르고 칸을 누르면 JSON과 검증 결과가 바뀝니다. 검증은 게임과 똑같이 <b>바라보는 방향</b>까지 따져서, 걷기와 점프로 모든 보석에 갈 수 있는지 계산합니다.</p>
+  </div>
+
+  <div class="editor" id="editor">
+    <div class="editor-bar">
+      <strong>맵툴</strong><span>—</span><span id="file-label">stage_01.json</span>
+      <span class="spacer"></span><span id="dirty-label">저장됨</span>
+    </div>
+    <div class="editor-body">
+      <div class="pane">
+        <div class="pane-title">스테이지</div>
+        <div class="brushes" id="stages"></div>
+        <div class="pane-title">붓</div>
+        <div class="brushes" id="brushes"></div>
+        <p class="note">시작은 맵에 하나만 둘 수 있어서, 새로 칠하면 이전 시작이 땅으로 바뀝니다.</p>
+      </div>
+      <div class="grid-area">
+        <div class="board" id="board" role="grid" aria-label="맵 칸"></div>
+        <div class="coords" id="coords">칸 위에 마우스를 올리면 좌표가 보입니다</div>
+      </div>
+      <div class="pane">
+        <div class="pane-title">맵 정보</div>
+        <div class="field"><label for="map-name">이름</label><input id="map-name" value="첫 번째 숲"></div>
+        <div class="field"><label for="w">크기 (가로 × 세로)</label>
+          <div class="size-row">
+            <select id="w"></select><span>×</span><select id="h"></select>
+          </div>
+        </div>
+        <div class="pane-title">검증</div>
+        <ul class="checks" id="checks"></ul>
+        <div class="btns">
+          <button class="btn" id="btn-new" type="button">새 스테이지</button>
+          <button class="btn" id="btn-reset" type="button">되돌리기</button>
+          <button class="btn" type="button" disabled title="Unity에서 동작">씬에 미리보기</button>
+          <button class="btn primary" id="btn-save" type="button">저장</button>
+        </div>
+        <div class="toast" id="toast" role="status"></div>
+      </div>
+    </div>
+    <div style="padding:0 16px 16px;display:grid;gap:6px">
+      <div class="pane-title">저장될 JSON</div>
+      <pre class="json-out" id="json"></pre>
+    </div>
+  </div>
+</section>
+
+<section class="col">
+  <div class="eyebrow">확정된 결정</div>
+  <h2>이렇게 만듭니다</h2>
+  <div class="decisions">
+    <div class="decision done-d">
+      <div class="q">맵 크기는 맵툴에서 지정한 그대로</div>
+      <div class="rec">가로·세로를 각각 2~16칸으로 정할 수 있습니다. 카메라가 보드 크기에 맞춰 자동으로 물러나서 어떤 크기든 화면에 다 들어옵니다.</div>
+    </div>
+    <div class="decision done-d">
+      <div class="q">보석 개수는 자유</div>
+      <div class="rec">1개 이상이면 됩니다. 화면 왼쪽 위 배지는 그 스테이지의 보석 수를 보여 줍니다.</div>
+    </div>
+    <div class="decision done-d">
+      <div class="q">맵은 스테이지 1 → n 순서로 진행</div>
+      <div class="rec">게임은 스테이지 1부터 시작합니다. 클리어하면 "다음 스테이지"로 넘어가고, 마지막 스테이지를 깨면 "처음부터"를 고를 수 있습니다. 떨어지면 같은 스테이지를 다시 합니다. 스테이지 추가·삭제·순서 변경은 맵툴에서 합니다.</div>
+    </div>
+    <div class="decision done-d">
+      <div class="q">JSON은 맵툴에서만 고침</div>
+      <div class="rec">파일은 <code>Assets/Resources/Stages</code>에 두고 게임 안에 묶어서 빌드합니다. 빌드한 폴더에서는 고칠 수 없습니다. 에디터에서 스테이지 JSON을 더블클릭하면 텍스트 편집기 대신 맵툴이 열립니다.</div>
+    </div>
+  </div>
+</section>
+
+<section class="col">
+  <div class="eyebrow">데이터 흐름</div>
+  <h2>맵툴에서 게임까지</h2>
+<pre class="mermaid">
+flowchart LR
+  A[맵툴 창<br/>MapEditorWindow] -->|칠하기| B[MapData]
+  B --> V{MapValidator<br/>+ MoveRules}
+  V -->|저장| J[(Resources/Stages<br/>stage_01.json …)]
+  J -->|게임 시작| L[StageLibrary<br/>+ StageProgress]
+  L --> M[MapData]
+  M --> Board[Board<br/>타일·장애물·카메라]
+  M --> GM[GameManager<br/>보석·클리어]
+  M --> Fox[FoxController<br/>시작 위치]
+  Fox -. 같은 이동 규칙 .- V
+</pre>
+  <p class="note">스테이지 순서는 파일 이름의 번호(<code>stage_01</code>, <code>stage_02</code> …)입니다. 맵툴에서 순서를 바꾸면 파일 이름도 맞춰서 바뀝니다.</p>
+</section>
+
+<section class="col">
+  <div class="eyebrow">파일 형식</div>
+  <h2>JSON 스테이지 파일</h2>
+  <p>칸은 지금의 <code>BoardLayout</code>과 같은 기호 문자열로 저장합니다. 사람이 고치는 파일은 아니지만, 버전 관리에서 바뀐 칸을 알아보기 쉽습니다. <code>rows[0]</code>이 화면에서 가장 먼 줄입니다.</p>
+<pre>{
+  "version": 1,
+  "name": "첫 번째 숲",
+  "width": 4,
+  "height": 4,
+  "rows": [
+    "G.#G",
+    ".O.G",
+    "#..O",
+    "S.G."
+  ]
+}</pre>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--grass)"></i><code>.</code> 땅</span>
+    <span><i class="sw" style="border:2px dashed var(--sky)"></i><code>O</code> 구멍</span>
+    <span><i class="sw" style="background:var(--stone)"></i><code>#</code> 장애물</span>
+    <span><i class="sw" style="background:var(--gem)"></i><code>G</code> 보석 (땅 위)</span>
+    <span><i class="sw" style="background:var(--grass);color:#fff">S</i><code>S</code> 시작 (땅 위)</span>
+  </div>
+  <p class="note"><code>version</code>은 나중에 칸 종류가 늘어날 때 옛 파일을 구분하려고 둡니다. 파일이 깨져 있으면 어느 줄 몇 번째 글자가 틀렸는지 오류로 알려 줍니다.</p>
+</section>
+
+<section class="col">
+  <div class="eyebrow">검증 규칙</div>
+  <h2>저장 전에 확인하는 것</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>규칙</th><th>어기면</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>시작 위치가 정확히 1개</td><td><span class="tag del">저장 불가</span></td><td>여우가 놓일 곳이 필요합니다.</td></tr>
+        <tr><td>보석이 1개 이상</td><td><span class="tag del">저장 불가</span></td><td>보석이 없으면 클리어 조건이 없습니다.</td></tr>
+        <tr><td>모든 보석에 갈 수 있음</td><td><span class="tag del">저장 불가</span></td><td>클리어할 수 없는 스테이지를 막습니다. 못 가는 보석은 빨간 테두리로 표시합니다.</td></tr>
+        <tr><td>크기 2×2 ~ 16×16</td><td><span class="tag del">선택 불가</span></td><td>입력 범위를 이 안으로 제한합니다.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">"갈 수 있음"은 (칸, 바라보는 방향) 상태를 넓이 우선 탐색으로 계산합니다. 걷기는 한 칸 이동이고, 장애물에 부딪히면 방향만 바뀝니다. 점프는 바라보는 방향으로 두 칸 앞에 착지하며, 그 칸이 장애물이면 제자리에 머뭅니다. 구멍이나 맵 밖으로 가는 이동은 실패로 봅니다. 이 계산은 <code>FoxController</code>가 쓰는 <code>MoveRules</code>를 그대로 호출합니다.</p>
+</section>
+
+<section>
+  <div class="col" style="display:grid;gap:10px">
+    <div class="eyebrow">코드 변경</div>
+    <h2>새로 만들고 고칠 파일</h2>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>파일</th><th></th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td><code>Scripts/Map/MapData.cs</code></td><td><span class="tag new">새로</span></td><td>스테이지 한 장의 데이터(이름, 크기, 칸 기호). 칸 종류·시작·보석 조회, 크기 변경. <code>BoardLayout</code>을 대신합니다.</td></tr>
+        <tr><td><code>Scripts/Map/MapJson.cs</code></td><td><span class="tag new">새로</span></td><td>JSON 읽기·쓰기와 형식 오류 메시지.</td></tr>
+        <tr><td><code>Scripts/Map/MoveRules.cs</code></td><td><span class="tag new">새로</span></td><td>걷기·점프 결과 계산(순수 C#). 게임과 검증이 함께 씁니다.</td></tr>
+        <tr><td><code>Scripts/Map/MapValidator.cs</code></td><td><span class="tag new">새로</span></td><td>검증 규칙과 도달 가능성 탐색.</td></tr>
+        <tr><td><code>Scripts/Map/StageLibrary.cs</code></td><td><span class="tag new">새로</span></td><td><code>Resources/Stages</code>의 스테이지 목록과 불러오기, 현재 스테이지 번호(재시작해도 유지).</td></tr>
+        <tr><td><code>Scripts/Game/CameraFit.cs</code></td><td><span class="tag new">새로</span></td><td>보드 크기에 맞춰 카메라 거리를 자동 조정.</td></tr>
+        <tr><td><code>Editor/MapEditorWindow.cs</code></td><td><span class="tag new">새로</span></td><td>맵툴 창. 스테이지 목록(추가·복제·삭제·순서), 붓, 칸 칠하기, 크기 변경, 저장·되돌리기, 실행 취소, 씬에 미리보기, 이 스테이지로 플레이. JSON 더블클릭 시 맵툴로 열기.</td></tr>
+        <tr><td><code>Board.cs</code></td><td><span class="tag chg">고침</span></td><td><code>MapData</code>로 보드를 만듭니다.</td></tr>
+        <tr><td><code>GameManager.cs / GameUI.cs</code></td><td><span class="tag chg">고침</span></td><td>현재 스테이지를 불러오고, 스테이지 번호 표시, 클리어 후 "다음 스테이지" / 마지막이면 "처음부터".</td></tr>
+        <tr><td><code>FoxController.cs</code></td><td><span class="tag chg">고침</span></td><td>이동 판정을 <code>MoveRules</code>로 옮깁니다. 동작은 그대로입니다.</td></tr>
+        <tr><td><code>BoardLayout.cs / .asset</code></td><td><span class="tag del">정리</span></td><td>내용을 <code>stage_01.json</code>으로 옮긴 뒤 삭제합니다.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="col">
+  <div class="eyebrow">진행 순서</div>
+  <h2>단계</h2>
+  <ol class="steps">
+    <li><div class="body"><h3>맵 데이터와 JSON</h3>
+      <p><code>MapData</code>, <code>MapJson</code>, <code>MoveRules</code>, <code>MapValidator</code>, <code>StageLibrary</code>를 만들고 지금의 맵을 <code>stage_01.json</code>으로 옮깁니다. 크기가 다른 예제 스테이지 2개를 더 넣습니다.</p>
+      <p class="done">확인: <b>저장 → 읽기 결과가 같음</b>, 잘못된 파일의 오류 메시지, 모든 스테이지 검증 통과를 EditMode 테스트로 확인.</p></div></li>
+    <li><div class="body"><h3>게임이 스테이지를 불러오게 전환</h3>
+      <p><code>Board</code>, <code>GameManager</code>, <code>FoxController</code>가 <code>MapData</code>를 쓰도록 고치고, 카메라 자동 맞춤과 스테이지 진행 UI를 넣습니다.</p>
+      <p class="done">확인: <b>기존 PlayMode 테스트 10개가 그대로 통과</b>. 스테이지 1 클리어 → 스테이지 2(다른 크기)로 넘어가는 테스트와 화면 캡처.</p></div></li>
+    <li><div class="body"><h3>맵툴 창</h3>
+      <p>메뉴 <b>FoxGame › 맵툴</b>. 왼쪽 스테이지 목록과 붓(단축키 1~5), 가운데 칸 그리드(누르거나 끌어서 칠하기), 오른쪽 크기·이름·검증·버튼. 실행 취소(Ctrl+Z), 저장 안 한 변경 표시, 다른 스테이지로 옮기거나 닫을 때 저장 확인.</p>
+      <p class="done">확인: 창 화면 캡처, 저장한 스테이지를 다시 열었을 때 같은 맵.</p></div></li>
+    <li><div class="body"><h3>미리보기와 바로 플레이</h3>
+      <p><b>씬에 미리보기</b>는 열린 씬의 보드를 이 스테이지로 다시 깔고, <b>이 스테이지로 플레이</b>는 그 스테이지부터 Play 모드에 들어갑니다.</p>
+      <p class="done">확인: 지정한 스테이지로 시작하는지 테스트.</p></div></li>
+    <li><div class="body"><h3>빌드 확인</h3>
+      <p>Windows 빌드에 스테이지가 모두 들어가고 순서대로 진행되는지 확인합니다.</p>
+      <p class="done">확인: 빌드 실행 화면 캡처, Player.log 오류 없음.</p></div></li>
+  </ol>
+</section>
+
+</div>
+
+<script>
+(function () {
+  var BRUSHES = [
+    { sym: ".", name: "땅", key: "1", sw: "background:var(--grass)" },
+    { sym: "O", name: "구멍", key: "2", sw: "border:2px dashed var(--sky)" },
+    { sym: "#", name: "장애물", key: "3", sw: "background:var(--stone)" },
+    { sym: "G", name: "보석", key: "4", sw: "background:var(--gem)" },
+    { sym: "S", name: "시작", key: "5", sw: "background:var(--grass);color:#fff", label: "S" }
+  ];
+  var STAGES = [
+    { file: "stage_01.json", name: "첫 번째 숲", rows: ["G.#G", ".O.G", "#..O", "S.G."] },
+    { file: "stage_02.json", name: "징검다리 들판", rows: ["G.O.G", "..#..", "O.G.O", "..#..", "S...G"] },
+    { file: "stage_03.json", name: "바위 골짜기", rows: ["G..O.G", ".#.O..", "..##.G", "S.O..."] }
+  ];
+  var current = 0;
+  var SAMPLE = STAGES[0].rows;
+  var rows, w, h, brush = "#", dirty = false;
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  function load(sample) {
+    rows = sample.map(function (r) { return r.split(""); });
+    h = rows.length; w = rows[0].length;
+  }
+
+  // ---------- 이동 규칙 (게임의 MoveRules와 같은 규칙)
+  function at(x, y) { // y=0 은 맨 아래 줄
+    if (x < 0 || y < 0 || x >= w || y >= h) return "out";
+    return rows[h - 1 - y][x];
+  }
+  function kind(x, y) {
+    var s = at(x, y);
+    if (s === "out" || s === "O") return "hole";
+    if (s === "#") return "obstacle";
+    return "ground";
+  }
+  var DIRS = [[0, 1], [0, -1], [-1, 0], [1, 0]];
+
+  function reachable() {
+    var start = null;
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) if (at(x, y) === "S") start = [x, y];
+    var seenCell = {};
+    if (!start) return seenCell;
+    var seen = {}, queue = [];
+    function push(x, y, d) {
+      var k = x + "," + y + "," + d;
+      if (seen[k]) return;
+      seen[k] = 1; seenCell[x + "," + y] = 1; queue.push([x, y, d]);
+    }
+    push(start[0], start[1], 1); // 시작할 때 카메라 쪽(아래)을 바라봄
+    while (queue.length) {
+      var s = queue.shift(), x0 = s[0], y0 = s[1], fd = s[2];
+      for (var d = 0; d < 4; d++) {        // 걷기: 방향을 바꾸며 한 칸
+        var nx = x0 + DIRS[d][0], ny = y0 + DIRS[d][1], k = kind(nx, ny);
+        if (k === "ground") push(nx, ny, d);
+        else if (k === "obstacle") push(x0, y0, d);   // 부딪혀서 방향만 바뀜
+      }
+      var jx = x0 + DIRS[fd][0] * 2, jy = y0 + DIRS[fd][1] * 2, jk = kind(jx, jy);  // 점프
+      if (jk === "ground") push(jx, jy, fd);
+    }
+    return seenCell;
+  }
+
+  function validate() {
+    var starts = 0, gems = [], out = [];
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+      var s = at(x, y);
+      if (s === "S") starts++;
+      if (s === "G") gems.push([x, y]);
+    }
+    var reach = reachable(), bad = gems.filter(function (g) { return !reach[g[0] + "," + g[1]]; });
+    out.push(starts === 1 ? { c: "ok", t: "시작 위치 1개" } : { c: "bad", t: starts === 0 ? "시작 위치가 없습니다" : "시작 위치가 " + starts + "개입니다" });
+    out.push(gems.length > 0 ? { c: "ok", t: "보석 " + gems.length + "개" } : { c: "bad", t: "보석이 없습니다" });
+    if (starts === 1 && gems.length) {
+      out.push(bad.length === 0 ? { c: "ok", t: "모든 보석에 갈 수 있음" }
+        : { c: "bad", t: "갈 수 없는 보석 " + bad.length + "개: " + bad.map(function (g) { return "(" + g[0] + "," + g[1] + ")"; }).join(" ") });
+    }
+    return { checks: out, unreachable: bad, canSave: out.every(function (c) { return c.c !== "bad"; }) };
+  }
+
+  // ---------- 화면
+  function renderBrushes() {
+    var box = $("brushes"); box.innerHTML = "";
+    BRUSHES.forEach(function (b) {
+      var el = document.createElement("button");
+      el.type = "button"; el.className = "brush";
+      el.setAttribute("aria-pressed", b.sym === brush ? "true" : "false");
+      el.innerHTML = '<i class="sw" style="' + b.sw + '">' + (b.label || "") + "</i>" + b.name + "<kbd>" + b.key + "</kbd>";
+      el.onclick = function () { brush = b.sym; renderBrushes(); };
+      box.appendChild(el);
+    });
+  }
+
+  function paint(x, y) {
+    var r = h - 1 - y;
+    if (rows[r][x] === brush) return;
+    if (brush === "S") for (var i = 0; i < h; i++) for (var j = 0; j < w; j++) if (rows[i][j] === "S") rows[i][j] = ".";
+    rows[r][x] = brush;
+    dirty = true; render();
+  }
+
+  function render() {
+    var v = validate(), bad = {};
+    v.unreachable.forEach(function (g) { bad[g[0] + "," + g[1]] = 1; });
+    var board = $("board"); board.innerHTML = "";
+    board.style.gridTemplateColumns = "repeat(" + w + ", auto)";
+    for (var r = 0; r < h; r++) for (var x = 0; x < w; x++) {
+      (function (x, y) {
+        var s = at(x, y), k = kind(x, y);
+        var el = document.createElement("button");
+        el.type = "button";
+        el.className = "cell " + k + (bad[x + "," + y] ? " unreachable" : "");
+        el.setAttribute("aria-label", "(" + x + "," + y + ") " + ({ ".": "땅", "O": "구멍", "#": "장애물", "G": "보석", "S": "시작" })[s]);
+        if (s === "G") el.innerHTML = '<span class="gem"></span>';
+        if (s === "S") el.innerHTML = '<span class="start">시작</span>';
+        el.onclick = function () { paint(x, y); };
+        el.onmouseenter = function () { $("coords").textContent = "x " + x + ", y " + y; };
+        board.appendChild(el);
+      })(x, h - 1 - r);
+    }
+    $("checks").innerHTML = v.checks.map(function (c) { return '<li class="' + c.c + '"><span>' + c.t + "</span></li>"; }).join("");
+    $("btn-save").disabled = !v.canSave;
+    $("dirty-label").textContent = dirty ? "● 저장 안 됨" : "저장됨";
+    $("json").textContent = JSON.stringify({
+      version: 1, name: $("map-name").value, width: w, height: h,
+      rows: rows.map(function (r) { return r.join(""); })
+    }, null, 2);
+  }
+
+  function resize(nw, nh) {
+    var next = [];
+    for (var r = 0; r < nh; r++) {
+      var srcR = r - (nh - h); // 아래쪽(시작 줄)을 기준으로 맞춤
+      var row = [];
+      for (var x = 0; x < nw; x++) row.push(srcR >= 0 && srcR < h && x < w ? rows[srcR][x] : ".");
+      next.push(row);
+    }
+    rows = next; w = nw; h = nh; dirty = true; render();
+  }
+
+  function fillSizes() {
+    ["w", "h"].forEach(function (id) {
+      var sel = $(id); sel.innerHTML = "";
+      for (var n = 2; n <= 16; n++) { var o = document.createElement("option"); o.value = n; o.textContent = n; sel.appendChild(o); }
+    });
+    $("w").value = w; $("h").value = h;
+  }
+
+  $("w").onchange = function () { resize(+this.value, h); };
+  $("h").onchange = function () { resize(w, +this.value); };
+  $("map-name").oninput = function () { dirty = true; render(); };
+  function openStage(i) {
+    current = i;
+    var st = STAGES[i];
+    load(st.rows); fillSizes(); $("map-name").value = st.name; $("file-label").textContent = st.file;
+    dirty = false; renderStages(); render(); $("toast").textContent = "";
+  }
+  function renderStages() {
+    var box = $("stages"); box.innerHTML = "";
+    STAGES.forEach(function (st, i) {
+      var el = document.createElement("button");
+      el.type = "button"; el.className = "brush";
+      el.setAttribute("aria-pressed", i === current ? "true" : "false");
+      el.innerHTML = '<i class="sw" style="background:var(--sky-soft);color:var(--sky);font-weight:700">' + (i + 1) + "</i>" + st.name;
+      el.onclick = function () { openStage(i); };
+      box.appendChild(el);
+    });
+  }
+  $("btn-new").onclick = function () {
+    var n = STAGES.length + 1, file = "stage_" + (n < 10 ? "0" + n : n) + ".json";
+    STAGES.push({ file: file, name: "새 스테이지", rows: ["....", "....", "....", "S..."] });
+    openStage(STAGES.length - 1); dirty = true; render();
+  };
+  $("btn-reset").onclick = function () { openStage(current); };
+  $("btn-save").onclick = function () {
+    STAGES[current].rows = rows.map(function (r) { return r.join(""); });
+    STAGES[current].name = $("map-name").value;
+    dirty = false; renderStages(); render();
+    $("toast").textContent = "Unity에서는 여기서 Resources/Stages/" + STAGES[current].file + "에 저장합니다 (시안이라 실제로 저장되지 않음)";
+  };
+  document.getElementById("editor").addEventListener("keydown", function (e) {
+    var b = BRUSHES.filter(function (b) { return b.key === e.key; })[0];
+    if (b && e.target.tagName !== "INPUT") { brush = b.sym; renderBrushes(); }
+  });
+
+  renderBrushes(); openStage(0);
+})();
+</script>

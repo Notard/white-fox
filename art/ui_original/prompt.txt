@@ -1,0 +1,16 @@
+Use your image generation tool to create a cohesive set of game UI art for a cute, refined, stylized 3D casual PC game called "White Fox" (a snow-white fox with an icy-blue tail tip collects light-blue diamond gems on floating grass-block islands; soft Nintendo-like, clean, premium, pastel sky). All UI pieces share one style: soft rounded shapes, gentle inner highlights, subtle soft shadow, colors: snow white, icy blue (#5BB8F5 to #2F86D6), warm cream, small touches of soft pink. No text unless stated. Save every file as PNG in the current directory with exactly these names.
+
+UI PIECES - must have a TRANSPARENT background (real alpha). If your tool cannot output transparency, instead put the piece on a perfectly flat pure magenta #FF00FF background with nothing else (no shadow on the background, no gradient):
+1) ui_panel.png (1024x1024): a large empty rounded-rectangle dialog card, warm snow-white fill with a very soft icy-blue rim/border and a faint frosty snowflake pattern only near the corners, generous corner radius, centered, filling about 90% of the image, flat front view, no perspective. Must be usable as a 9-slice (plain, flat center area).
+2) ui_button_primary.png (1024x512): a wide empty pill-shaped glossy button, icy-blue gradient with a soft white top highlight, centered, filling about 90% of the width, flat front view.
+3) ui_button_secondary.png (1024x512): same shape as #2 but snow-white/cream with a light icy-blue rim.
+4) title_logo.png (1536x768): game logo with the text "White Fox" in chunky, rounded, friendly display lettering, snow-white letters with icy-blue outline and a soft shadow, a cute pair of white fox ears with pink inner ears peeking from the top of the W, a small light-blue diamond gem and a few tiny snow sparkles. The text must be spelled exactly: White Fox
+5) icon_lock.png (512x512): cute rounded padlock icon, icy-blue and white.
+6) icon_clock.png (512x512): cute rounded stopwatch icon, icy-blue and white.
+7) icon_star.png (512x512): cute rounded star icon, warm golden-yellow with a white highlight (for a new record).
+8) icon_pause.png (512x512): cute rounded pause icon (two bars) inside a soft circle, icy-blue and white.
+
+BACKGROUND (opaque, no transparency needed):
+9) bg_sky.png (1920x1080): soft pastel sky backdrop to sit behind the game board: light sky blue at the top fading to very pale mint/cream at the bottom, a few fluffy soft clouds, very faint distant snowy mountain silhouettes near the bottom, gentle and low-contrast so 3D grass tiles in front stay readable. No characters, no text.
+
+Only report the saved file paths when done.

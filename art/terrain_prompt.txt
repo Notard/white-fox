@@ -1,0 +1,7 @@
+Use your image generation tool to create two square, SEAMLESS, TILEABLE game textures (1024x1024, evenly lit, no perspective, no text, no borders). Style: refined, premium stylized hand-painted 3D game art (like Captain Toad: Treasure Tracker / Monument Valley / modern Nintendo dioramas) that matches an existing soft painted green grass texture. Save the PNG files in the current directory with exactly these names:
+
+1) cliff_side.png : the side face of a floating grassy island cliff, seen straight on (orthographic front view): soft warm layered earth and rounded stylized rock strata in horizontal bands - warm ochre/brown soil, cool grey-lavender rounded stones, a few small roots, subtle moss specks. Painterly, soft edges, gentle ambient occlusion between rocks. Must tile seamlessly horizontally AND vertically.
+
+2) grass_lush.png : lush, refined stylized grass seen from directly above, rich but soft yellow-green with gentle light and shadow variation, soft painterly blade clumps, very small sparse white and pale-yellow flowers, slightly brighter sunlit patches. Calm enough that a small white fox character on top stays readable. Must tile seamlessly on all edges.
+
+Only report the saved file paths when done.

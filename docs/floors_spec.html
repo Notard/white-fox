@@ -1,0 +1,308 @@
+<title>White Fox 층 기능</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 레이아웃: 맵툴 계획서와 같은 기둥(본문 46rem) + 그림·표만 64rem */
+:root {
+  --bg: #f4f8fb; --surface: #ffffff; --ink: #22303f; --muted: #5c6b7b; --line: #d8e2ea;
+  --grass: #4f9a3f; --grass-soft: #e3f1dc; --sky: #2f7fd0; --sky-soft: #e2eefa;
+  --dirt: #9a6337; --dirt-soft: #f3e6da; --stone: #8a8fa0; --gem: #2ba3ef;
+  --bad: #c43d3d; --bad-soft: #fde5e5; --code-bg: #eef3f7; --fox: #ffffff; --fox-line: #22303f;
+  --font-display: "Jua", "Noto Sans KR", system-ui, sans-serif;
+  --font-body: "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131b23; --surface: #1b2530; --ink: #e4ecf3; --muted: #9fb0c0; --line: #2d3a47;
+    --grass: #74c260; --grass-soft: #1f3320; --sky: #6db0f0; --sky-soft: #172a3d;
+    --dirt: #c48a5a; --dirt-soft: #3a2a1d; --stone: #9aa0b2; --gem: #57bdf7;
+    --bad: #f07a7a; --bad-soft: #3d1c1c; --code-bg: #16202a; --fox: #f4f7fb; --fox-line: #0f151c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131b23; --surface: #1b2530; --ink: #e4ecf3; --muted: #9fb0c0; --line: #2d3a47;
+  --grass: #74c260; --grass-soft: #1f3320; --sky: #6db0f0; --sky-soft: #172a3d;
+  --dirt: #c48a5a; --dirt-soft: #3a2a1d; --stone: #9aa0b2; --gem: #57bdf7;
+  --bad: #f07a7a; --bad-soft: #3d1c1c; --code-bg: #16202a; --fox: #f4f7fb; --fox-line: #0f151c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15.5px; line-height: 1.7; }
+.wrap { max-width: 64rem; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px; display: grid; gap: 56px; }
+.col { max-width: 46rem; }
+h1, h2 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.8rem); line-height: 1.2; }
+h2 { font-size: 1.6rem; line-height: 1.3; }
+h3 { font-size: 1.02rem; margin: 0; }
+p { margin: 0; }
+section { display: grid; gap: 18px; }
+.eyebrow { font-size: 0.78rem; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; }
+.lead { font-size: 1.08rem; color: var(--muted); max-width: 40rem; }
+.note { font-size: 0.85rem; color: var(--muted); }
+code { font-family: var(--font-mono); font-size: 0.88em; }
+:not(pre) > code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; }
+pre { margin: 0; background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.55; }
+ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+header { display: grid; gap: 14px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--muted); font-size: 0.88rem; }
+.meta b { color: var(--ink); font-weight: 500; }
+
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 14px; }
+.summary div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 6px; min-width: 0; }
+.summary h3 { font-family: var(--font-display); font-weight: 400; font-size: 1.15rem; }
+.summary p { color: var(--muted); font-size: 0.92rem; }
+.summary .num { font-family: var(--font-display); font-size: 2rem; line-height: 1; color: var(--grass); }
+
+/* 옆에서 본 규칙 그림 */
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr)); gap: 14px; }
+.rule { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 14px 12px; display: grid; gap: 8px; min-width: 0; }
+.rule svg { width: 100%; height: auto; display: block; }
+.rule .verdict { font-weight: 700; font-size: 0.92rem; }
+.rule .verdict.ok { color: var(--grass); }
+.rule .verdict.no { color: var(--bad); }
+.rule p { font-size: 0.86rem; color: var(--muted); }
+.col-grass { fill: var(--grass); }
+.col-dirt { fill: var(--dirt); }
+.col-line { stroke: var(--surface); stroke-width: 2; }
+.arrow-ok { stroke: var(--grass); fill: none; stroke-width: 2.5; }
+.arrow-no { stroke: var(--bad); fill: none; stroke-width: 2.5; stroke-dasharray: 5 4; }
+.fox { fill: var(--fox); stroke: var(--fox-line); stroke-width: 1.5; }
+.lbl { fill: var(--muted); font-size: 11px; font-family: var(--font-body); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 0.78rem; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; background: var(--code-bg); }
+td code { white-space: nowrap; }
+.tag { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+.tag.new { background: var(--grass-soft); color: var(--grass); }
+.tag.chg { background: var(--sky-soft); color: var(--sky); }
+.tag.ok { background: var(--grass-soft); color: var(--grass); }
+.tag.no { background: var(--bad-soft); color: var(--bad); }
+
+figure { margin: 0; display: grid; gap: 8px; }
+figure img { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); display: block; }
+figcaption { font-size: 0.85rem; color: var(--muted); }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 18px; align-items: start; }
+.two > * { min-width: 0; }
+.tests { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 6px 18px; font-size: 0.88rem; }
+.tests code { font-size: 0.82rem; }
+</style>
+
+<div class="wrap">
+
+<header class="col">
+  <div class="eyebrow">WHITE FOX · 변경 기록</div>
+  <h1>칸마다 높이, 1층부터 9층까지</h1>
+  <p class="lead">한 보드 안에서 칸마다 층(높이)을 정할 수 있게 했습니다. 여우는 걸어서 1층, 점프(Space)로 바로 앞 칸 2층까지 뛰어오르고, 내려가는 건 몇 층이든 됩니다. 맵툴에서 높이 붓으로 층을 칠하고, 스테이지 파일은 버전 2 형식으로 저장됩니다.</p>
+  <div class="meta"><span>작성 <b>2026-10-06</b></span><span>대상 <b>FoxGame (Unity 6000.5)</b></span><span>상태 <b>구현 완료 · 테스트 34개 통과</b></span><span>수정 <b>점프로 바로 앞 높은 칸에 오르기</b></span></div>
+</header>
+
+<section>
+  <div class="summary">
+    <div><span class="num">1층</span><h3>걸어서 오르기</h3><p>바로 옆 칸이 1층 높은 데까지. 2층 이상 높으면 벽이라 부딪히고 방향만 바뀝니다.</p></div>
+    <div><span class="num">2층</span><h3>점프로 오르기</h3><p>바로 앞 칸이 1~2층 높으면 그 위로 뛰어오릅니다. 앞 칸이 높지 않으면 두 칸 앞(최대 2층 높은 곳)으로 뜁니다.</p></div>
+    <div><span class="num">1~9</span><h3>층 범위</h3><p>칸마다 1~9층. 2층 이상은 흙 블록을 쌓고 맨 위에 잔디 타일을 얹습니다.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="col" style="display:grid;gap:10px">
+    <div class="eyebrow">이동 규칙</div>
+    <h2>옆에서 본 오르내리기</h2>
+    <p>그림은 여우가 오른쪽으로 움직일 때를 옆에서 본 모습입니다. 기둥 하나가 한 칸이고, 블록 한 개가 한 층입니다.</p>
+  </div>
+  <div class="rules">
+    <div class="rule">
+      <svg viewBox="0 0 220 120" role="img" aria-label="1층에서 2층으로 걸어 오름">
+        <rect class="col-dirt col-line" x="20" y="80" width="60" height="30"/><rect class="col-grass" x="20" y="76" width="60" height="8"/>
+        <rect class="col-dirt col-line" x="90" y="50" width="60" height="60"/><rect class="col-grass" x="90" y="46" width="60" height="8"/>
+        <circle class="fox" cx="50" cy="64" r="9"/>
+        <path class="arrow-ok" d="M62 60 Q90 30 115 38"/><path class="arrow-ok" d="M108 33 L116 38 L108 43"/>
+        <text class="lbl" x="38" y="104">1층</text><text class="lbl" x="108" y="104">2층</text>
+      </svg>
+      <div class="verdict ok">걷기 +1층 · 오름</div>
+      <p>1층 높은 칸은 걸어서 올라섭니다.</p>
+    </div>
+    <div class="rule">
+      <svg viewBox="0 0 220 120" role="img" aria-label="1층에서 3층은 걸어서 못 오름">
+        <rect class="col-dirt col-line" x="20" y="80" width="60" height="30"/><rect class="col-grass" x="20" y="76" width="60" height="8"/>
+        <rect class="col-dirt col-line" x="90" y="20" width="60" height="90"/><rect class="col-grass" x="90" y="16" width="60" height="8"/>
+        <circle class="fox" cx="50" cy="64" r="9"/>
+        <path class="arrow-no" d="M62 64 L84 64"/><path class="arrow-no" d="M78 58 L86 64 L78 70"/>
+        <text class="lbl" x="38" y="104">1층</text><text class="lbl" x="108" y="104">3층</text>
+      </svg>
+      <div class="verdict no">걷기 +2층 · 막힘</div>
+      <p>벽에 부딪혀 제자리. 방향만 그쪽으로 바뀝니다.</p>
+    </div>
+    <div class="rule">
+      <svg viewBox="0 0 220 120" role="img" aria-label="1층에서 바로 앞 3층 칸으로 뛰어오름">
+        <rect class="col-dirt col-line" x="20" y="80" width="60" height="30"/><rect class="col-grass" x="20" y="76" width="60" height="8"/>
+        <rect class="col-dirt col-line" x="90" y="20" width="60" height="90"/><rect class="col-grass" x="90" y="16" width="60" height="8"/>
+        <circle class="fox" cx="50" cy="64" r="9"/>
+        <path class="arrow-ok" d="M58 54 Q70 -2 112 6"/><path class="arrow-ok" d="M104 1 L113 6 L105 11"/>
+        <text class="lbl" x="38" y="104">1층</text><text class="lbl" x="108" y="104">3층</text>
+      </svg>
+      <div class="verdict ok">점프 · 바로 앞 +2층 · 뛰어오름</div>
+      <p>바로 앞 칸이 1~2층 높으면 Space로 그 칸 위에 올라섭니다.</p>
+    </div>
+    <div class="rule">
+      <svg viewBox="0 0 220 120" role="img" aria-label="1층에서 두 칸 앞 3층으로 점프">
+        <rect class="col-dirt col-line" x="10" y="80" width="60" height="30"/><rect class="col-grass" x="10" y="76" width="60" height="8"/>
+        <rect class="col-dirt col-line" x="80" y="80" width="60" height="30"/><rect class="col-grass" x="80" y="76" width="60" height="8"/>
+        <rect class="col-dirt col-line" x="150" y="20" width="60" height="90"/><rect class="col-grass" x="150" y="16" width="60" height="8"/>
+        <circle class="fox" cx="40" cy="64" r="9"/>
+        <path class="arrow-ok" d="M48 56 Q110 -10 178 8"/><path class="arrow-ok" d="M170 3 L179 8 L171 13"/>
+        <text class="lbl" x="28" y="104">1층</text><text class="lbl" x="98" y="104">1층</text><text class="lbl" x="168" y="104">3층</text>
+      </svg>
+      <div class="verdict ok">점프 · 두 칸 앞 +2층 · 오름</div>
+      <p>바로 앞이 높지 않으면 두 칸 앞으로 뛰고, 2층 높은 곳까지 착지합니다.</p>
+    </div>
+    <div class="rule">
+      <svg viewBox="0 0 220 120" role="img" aria-label="바로 앞 4층 벽은 오르지도 넘지도 못함">
+        <rect class="col-dirt col-line" x="10" y="80" width="60" height="30"/><rect class="col-grass" x="10" y="76" width="60" height="8"/>
+        <rect class="col-dirt col-line" x="80" y="4" width="60" height="106"/><rect class="col-grass" x="80" y="0" width="60" height="8"/>
+        <rect class="col-dirt col-line" x="150" y="80" width="60" height="30"/><rect class="col-grass" x="150" y="76" width="60" height="8"/>
+        <circle class="fox" cx="40" cy="64" r="9"/>
+        <path class="arrow-no" d="M48 58 Q62 40 74 38"/><path class="arrow-no" d="M67 33 L76 38 L68 43"/>
+        <text class="lbl" x="28" y="104">1층</text><text class="lbl" x="98" y="104">4층</text><text class="lbl" x="168" y="104">1층</text>
+      </svg>
+      <div class="verdict no">높은 벽 · 막힘</div>
+      <p>바로 앞이 3층 이상 높으면 올라서지도, 넘어서 두 칸 앞으로 뛰지도 못하고 제자리.</p>
+    </div>
+    <div class="rule">
+      <svg viewBox="0 0 220 120" role="img" aria-label="높은 곳에서는 몇 층이든 내려감">
+        <rect class="col-dirt col-line" x="20" y="20" width="60" height="90"/><rect class="col-grass" x="20" y="16" width="60" height="8"/>
+        <rect class="col-dirt col-line" x="90" y="80" width="60" height="30"/><rect class="col-grass" x="90" y="76" width="60" height="8"/>
+        <circle class="fox" cx="50" cy="4" r="9" transform="translate(0 0)"/>
+        <path class="arrow-ok" d="M60 8 Q100 10 112 64"/><path class="arrow-ok" d="M106 58 L112 66 L117 57"/>
+        <text class="lbl" x="38" y="104">3층</text><text class="lbl" x="108" y="104">1층</text>
+      </svg>
+      <div class="verdict ok">내려가기 · 몇 층이든</div>
+      <p>걷기든 점프든 낮은 칸으로는 높이와 상관없이 내려갑니다.</p>
+    </div>
+    <div class="rule">
+      <svg viewBox="0 0 220 120" role="img" aria-label="구멍과 맵 밖은 높이와 상관없이 떨어짐">
+        <rect class="col-dirt col-line" x="20" y="50" width="60" height="60"/><rect class="col-grass" x="20" y="46" width="60" height="8"/>
+        <rect x="90" y="46" width="60" height="64" fill="none" stroke="var(--sky)" stroke-width="2" stroke-dasharray="5 4"/>
+        <circle class="fox" cx="50" cy="34" r="9"/>
+        <path class="arrow-no" d="M60 34 Q110 30 118 100"/><path class="arrow-no" d="M112 94 L118 103 L124 94"/>
+        <text class="lbl" x="38" y="104">2층</text><text class="lbl" x="105" y="80">구멍</text>
+      </svg>
+      <div class="verdict no">구멍 · 맵 밖 · 떨어짐</div>
+      <p>지금 높이 그대로 그 위치까지 간 다음 떨어지고, 게임 오버입니다.</p>
+    </div>
+  </div>
+  <div class="col table-wrap">
+    <table>
+      <thead><tr><th>동작</th><th>목표 칸</th><th>결과</th></tr></thead>
+      <tbody>
+        <tr><td>걷기 (WASD)</td><td>땅, 높이 차 ≤ +1층</td><td><span class="tag ok">이동</span></td></tr>
+        <tr><td>걷기</td><td>땅, 높이 차 ≥ +2층 / 장애물</td><td><span class="tag no">제자리</span> 방향만 바뀜</td></tr>
+        <tr><td>점프 (Space)</td><td>바로 앞 땅이 +1~+2층</td><td><span class="tag ok">이동</span> 바로 앞 칸 위로</td></tr>
+        <tr><td>점프</td><td>그 밖: 두 칸 앞 땅, 높이 차 ≤ +2층, 가운데 칸이 출발·착지 중 높은 쪽보다 2층 이상 높지 않음</td><td><span class="tag ok">이동</span> 두 칸 앞으로</td></tr>
+        <tr><td>점프</td><td>두 칸 앞이 +3층 이상 / 장애물 / 가운데 벽</td><td><span class="tag no">제자리</span> 제자리 점프</td></tr>
+        <tr><td>걷기·점프</td><td>구멍, 맵 밖</td><td><span class="tag no">떨어짐</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="col note">숫자는 <code>MoveRules</code>의 상수 <code>WalkClimb = 1</code>, <code>JumpClimb = 2</code>, <code>WallOverJump = 2</code>로 정해져 있습니다. 게임과 맵툴 검증이 같은 코드를 쓰므로, 상수를 바꾸면 둘 다 함께 바뀝니다.</p>
+</section>
+
+<section>
+  <div class="col" style="display:grid;gap:10px">
+    <div class="eyebrow">게임 화면</div>
+    <h2>예제 스테이지 5 "언덕 오르기"</h2>
+  </div>
+  <figure>
+    <img src="img/floors_game.png" alt="언덕 오르기 스테이지. 높은 칸은 흙 블록이 쌓여 있고, 여우가 오른쪽 위 3층 칸에 서 있다.">
+    <figcaption>여우가 1층에서 바로 앞 3층 칸으로 뛰어올라 보석을 먹은 직후. 높은 칸은 흙 블록이 쌓여 옆면이 드러나고, 카메라는 가장 높은 칸까지 화면에 들어오게 물러납니다.</figcaption>
+  </figure>
+</section>
+
+<section class="col">
+  <div class="eyebrow">파일 형식</div>
+  <h2>스테이지 파일 버전 2</h2>
+  <p><code>rows</code>와 같은 모양의 <code>floors</code>가 추가됐습니다. 숫자 하나가 그 칸의 층입니다. 구멍 칸의 숫자는 쓰이지 않습니다.</p>
+<pre>{
+  "version": 2,
+  "name": "언덕 오르기",
+  "width": 5,
+  "height": 5,
+  "rows":   [ "G.#.G", ".....", "..G..", ".O...", "S...." ],
+  "floors": [ "33213", "32211", "22311", "11211", "11111" ]
+}</pre>
+  <ul>
+    <li><b>버전 1 파일</b>(지금까지 만든 스테이지 1~4)은 <code>floors</code>가 없어서 모두 1층으로 읽습니다. 게임에서 그대로 쓸 수 있고, 맵툴에서 저장하면 버전 2로 바뀝니다.</li>
+    <li><code>floors</code>의 줄 수·길이가 <code>rows</code>와 다르거나 1~9가 아닌 글자가 있으면, 몇째 줄 몇째 글자가 틀렸는지 오류로 알려 줍니다.</li>
+    <li>크기를 바꾸면 새로 생긴 칸은 1층 땅입니다.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="col" style="display:grid;gap:10px">
+    <div class="eyebrow">맵툴</div>
+    <h2>높이 붓과 층 표시</h2>
+  </div>
+  <div class="two">
+    <figure>
+      <img src="img/floors_maptool.png" alt="맵툴 창. 칸마다 3층, 2층 같은 층수가 표시되고, 왼쪽 아래에 높이 붓과 층 슬라이더가 있다.">
+      <figcaption>스테이지 5를 연 맵툴. 높은 칸일수록 잔디가 밝고 아래 흙 띠가 두껍습니다.</figcaption>
+    </figure>
+    <div style="display:grid;gap:12px">
+      <ul>
+        <li><b>높이 붓</b>(키 6): 고른 층수를 칸에 칠합니다. 끌어서 여러 칸을 한 번에 칠할 수 있습니다.</li>
+        <li><b>층 고르기</b>: 붓 아래 슬라이더(1~9) 또는 <b>Q</b> / <b>E</b> 키로 내리기·올리기. 바꾸면 자동으로 높이 붓이 선택됩니다.</li>
+        <li><b>층 표시</b>: 2층 이상 칸에는 왼쪽 위에 "2층"처럼 표시합니다. 높이 붓을 고르면 1층 칸에도 표시됩니다.</li>
+        <li><b>정보</b>: 마우스를 올린 칸의 층수, 스테이지 목록의 최고 층("5×5, 3층"), 검증 칸의 "가장 높은 칸 n층".</li>
+        <li><b>검증</b>: 갈 수 있는지 계산할 때 높이 규칙을 그대로 씁니다. 너무 높아서 못 가는 보석도 빨간 테두리로 표시되고 저장이 막힙니다.</li>
+        <li>실행 취소, 되돌리기, 씬에 미리보기, 이 스테이지로 플레이는 높이에도 그대로 동작합니다.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="col" style="display:grid;gap:10px">
+    <div class="eyebrow">코드 변경</div>
+    <h2>바뀐 파일</h2>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>파일</th><th></th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td><code>Scripts/Map/MapData.cs</code></td><td><span class="tag chg">고침</span></td><td><code>floors</code>, <code>FloorAt</code>, <code>SetFloor</code>, <code>HighestFloor</code>. 크기 변경 때 층도 유지. 버전 2.</td></tr>
+        <tr><td><code>Scripts/Map/MapJson.cs</code></td><td><span class="tag chg">고침</span></td><td>버전 1 → 1층으로 읽기, <code>floors</code> 형식 검사.</td></tr>
+        <tr><td><code>Scripts/Map/MoveRules.cs</code></td><td><span class="tag chg">고침</span></td><td>걷기 +1층, 점프로 바로 앞 칸 +2층까지 뛰어오르기, 그 밖에는 두 칸 앞 점프(+2층까지), 가운데 벽 규칙.</td></tr>
+        <tr><td><code>Scripts/Board/Board.cs</code></td><td><span class="tag chg">고침</span></td><td>층만큼 흙 블록을 쌓고 잔디 타일을 얹음. 칸 좌표가 윗면 높이를 돌려줌 (<code>FloorHeight</code>, <code>TopY</code>).</td></tr>
+        <tr><td><code>Scripts/Game/CameraFit.cs</code></td><td><span class="tag chg">고침</span></td><td>가장 높은 칸까지 화면에 들어오게.</td></tr>
+        <tr><td><code>Scripts/Fox/FoxController.cs</code></td><td><span class="tag chg">고침</span></td><td>높이가 다른 칸으로 걸을 때 살짝 뛰어오르는 궤적, 점프로 오를 때 더 높은 궤적, 높은 곳에서 구멍으로 가면 그 높이에서 떨어짐.</td></tr>
+        <tr><td><code>Editor/MapTool/*</code></td><td><span class="tag chg">고침</span></td><td>높이 붓, 층 슬라이더, Q/E, 층 표시와 색, 목록·검증 정보.</td></tr>
+        <tr><td><code>tiles/build_tiles.py</code> → <code>block.fbx</code></td><td><span class="tag new">새로</span></td><td>높은 칸 아래를 채우는 흙 블록 모델 (Blender).</td></tr>
+        <tr><td><code>Resources/Stages/stage_05.json</code></td><td><span class="tag new">새로</span></td><td>예제 스테이지 "언덕 오르기" (5×5, 최고 3층, 보석 3개).</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="col">
+  <div class="eyebrow">확인</div>
+  <h2>테스트 34개 통과</h2>
+  <p>EditMode 22개, PlayMode 12개. 높이와 관련해 새로 추가한 테스트는 아래와 같습니다. 모든 스테이지(직접 만드신 스테이지 4 포함)가 새 규칙의 검증도 통과합니다.</p>
+  <div class="tests">
+    <span><code>Version1FilesReadAsFirstFloor</code> 옛 파일 읽기</span>
+    <span><code>FloorsRoundTripAndValidate</code> 저장·읽기, 잘못된 층</span>
+    <span><code>WalkClimbsOneFloorAndStepsDownAny</code></span>
+    <span><code>JumpClimbsTwoFloors</code></span>
+    <span><code>JumpLimits</code> +3층, 높은 벽</span>
+    <span><code>JumpOntoHigherCellJustAhead</code> 바로 앞 높은 칸으로 뛰어오르기</span>
+    <span><code>ResizeKeepsFloors</code></span>
+    <span><code>ValidatorUsesFloors</code> 높아서 못 가는 보석</span>
+    <span><code>ClimbingFloors</code> 실제 게임에서 오르기·막힘·점프</span>
+  </div>
+</section>
+
+</div>

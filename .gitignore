@@ -1,0 +1,46 @@
+# Unity (FoxGame)
+FoxGame/[Ll]ibrary/
+FoxGame/[Tt]emp/
+FoxGame/[Oo]bj/
+FoxGame/[Bb]uild/
+FoxGame/[Bb]uilds/
+FoxGame/[Ll]ogs/
+FoxGame/[Uu]ser[Ss]ettings/
+FoxGame/[Mm]emoryCaptures/
+FoxGame/[Rr]ecordings/
+FoxGame/Logs*
+FoxGame/*.csproj
+FoxGame/*.sln
+FoxGame/*.slnx
+FoxGame/.vs/
+FoxGame/.vscode/
+FoxGame/.idea/
+FoxGame/*.pidb.meta
+FoxGame/*.pdb.meta
+FoxGame/*.mdb.meta
+FoxGame/sysinfo.txt
+FoxGame/crashlytics-build.properties
+FoxGame/Assets/Tests/EditMode/TempStages*
+
+# Windows 빌드 결과
+Build/
+
+# Blender 백업
+*.blend1
+
+# 테스트 결과
+*.xml.bak
+edit.xml
+play.xml
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# 로컬 도구 설정
+.claude/
+
+# 창을 찍은 캡처 (가장자리에 바탕화면이 조금 찍힘) · 디버그 캡처
+FoxGame/Screenshots/build_*.png
+FoxGame/Screenshots/_check.png

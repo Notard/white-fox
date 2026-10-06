@@ -1,0 +1,7 @@
+Use your image generation tool to create two square, SEAMLESS, TILEABLE top-down game textures (1024x1024, flat orthographic top view, evenly lit, no perspective, no text, no borders). Style: cute stylized hand-painted 3D casual game, matching an existing set of soft painted green grass, warm brown soil and grey-lavender stone textures (Nintendo-like, soft, clean). Save the PNG files in the current directory with exactly these names:
+
+1) ice_top.png : a frozen pond ice surface seen from above - pale icy blue and white, smooth glossy look with soft painted highlights, a few gentle frost streaks and tiny embedded bubbles, faint shallow cracks. Calm and clean so a small white fox on top stays readable. Must tile seamlessly on all edges.
+
+2) cracked_top.png : the same style of soft painted green grass as a normal grass tile, but the ground is visibly fragile: several dark brown cracks run across it, a few small missing patches showing soil, some loose pebbles - it should clearly read as "this tile will crumble". Must tile seamlessly on all edges.
+
+Only report the saved file paths when done.

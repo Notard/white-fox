@@ -1,0 +1,13 @@
+Use your image generation tool to create three matching 2D anime-style EYE textures for a cute white fox character (Japanese TV anime / chibi mascot style, clean cel-shaded, crisp lines). Each image: 512x512 PNG with a REAL TRANSPARENT background (alpha) - only the eye drawing itself is opaque, no skin, no fur, no face around it. If your tool cannot output transparency, use a perfectly flat pure magenta #FF00FF background instead.
+
+All three must use the SAME framing so they can be swapped: the eye centered, filling about 80% of the image width, drawn as the character's RIGHT eye seen from the front (it sits on the LEFT side of the face), so the outer corner of the eye points to the LEFT of the image and the inner corner to the right.
+
+Save in the current directory with exactly these names:
+
+1) eye_open.png : a large, tall, rounded anime eye. Thick dark navy/purple upper eyelash line with a small elegant flick at the outer (left) corner, thin lower line. Big iris filling most of the eye: deep navy-indigo at the top fading to bright sky blue at the bottom, a darker pupil, a large soft white highlight at the upper left and a small round highlight at the lower right, a few tiny sparkle dots. The white of the eye visible only as a thin sliver.
+
+2) eye_happy.png : the same eye closed in a happy smile: a single thick upward arc "^" shape in the same dark navy/purple line color with the same small flick at the outer (left) end. Nothing else.
+
+3) eye_blink.png : the same eye gently closed (blink / sleeping): a single thick, slightly downward-curved line in the same color with the small flick at the outer (left) end and two or three tiny lashes. Nothing else.
+
+Only report the saved file paths when done.

@@ -1,0 +1,8 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.fbx binary
+*.glb binary
+*.blend binary
+*.psd binary
+*.asset -text merge=unityyamlmerge

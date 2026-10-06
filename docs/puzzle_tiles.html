@@ -1,0 +1,239 @@
+<title>White Fox 퍼즐 칸</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 레이아웃: 다른 문서와 같은 기둥(46rem) + 카드·표 64rem. 칸마다 고유색(얼음 하늘색, 무너짐 갈색, 스위치 분홍, 문 보라, 계단 돌색) */
+:root {
+  --bg: #f4f8fb; --surface: #ffffff; --ink: #22303f; --muted: #5c6b7b; --line: #d8e2ea; --code-bg: #eef3f7;
+  --accent: #2f7fd0; --accent-soft: #e2eefa;
+  --grass: #4f9a3f; --grass-soft: #e3f1dc;
+  --ice: #5bb8f5; --ice-soft: #e4f4fe; --crumble: #a0703f; --crumble-soft: #f5ebe0;
+  --switch: #e0609a; --switch-soft: #fce6f0; --door: #7d68c9; --door-soft: #eeeafb; --stairs: #8a8fa0; --stairs-soft: #eceef2;
+  --bad: #c43d3d;
+  --font-display: "Jua", "Noto Sans KR", system-ui, sans-serif;
+  --font-body: "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131b23; --surface: #1b2530; --ink: #e4ecf3; --muted: #9fb0c0; --line: #2d3a47; --code-bg: #16202a;
+    --accent: #6db0f0; --accent-soft: #172a3d; --grass: #74c260; --grass-soft: #1f3320;
+    --ice: #7ccaf7; --ice-soft: #16303f; --crumble: #c99366; --crumble-soft: #33261a;
+    --switch: #f08ab6; --switch-soft: #3a1f2c; --door: #a594e6; --door-soft: #272240; --stairs: #a5aabb; --stairs-soft: #252a33;
+    --bad: #f07a7a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131b23; --surface: #1b2530; --ink: #e4ecf3; --muted: #9fb0c0; --line: #2d3a47; --code-bg: #16202a;
+  --accent: #6db0f0; --accent-soft: #172a3d; --grass: #74c260; --grass-soft: #1f3320;
+  --ice: #7ccaf7; --ice-soft: #16303f; --crumble: #c99366; --crumble-soft: #33261a;
+  --switch: #f08ab6; --switch-soft: #3a1f2c; --door: #a594e6; --door-soft: #272240; --stairs: #a5aabb; --stairs-soft: #252a33;
+  --bad: #f07a7a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15.5px; line-height: 1.7; }
+.wrap { max-width: 64rem; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px; display: grid; gap: 52px; }
+.col { max-width: 46rem; }
+h1, h2 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.8rem); line-height: 1.2; }
+h2 { font-size: 1.6rem; line-height: 1.3; }
+h3 { margin: 0; }
+p { margin: 0; }
+section { display: grid; gap: 18px; }
+.eyebrow { font-size: 0.78rem; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; }
+.lead { font-size: 1.08rem; color: var(--muted); max-width: 42rem; }
+.note { font-size: 0.85rem; color: var(--muted); }
+code { font-family: var(--font-mono); font-size: 0.88em; }
+:not(pre) > code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; }
+pre { margin: 0; background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.55; }
+header { display: grid; gap: 14px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--muted); font-size: 0.88rem; }
+.meta b { color: var(--ink); font-weight: 500; }
+ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(14.5rem, 1fr)); gap: 14px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: 12px; padding: 16px 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.tile header { display: flex; align-items: center; gap: 10px; }
+.tile h3 { font-family: var(--font-display); font-weight: 400; font-size: 1.3rem; }
+.sym { font-family: var(--font-mono); font-weight: 600; font-size: 0.85rem; background: var(--soft); color: var(--c); border-radius: 6px; padding: 0 8px; margin-left: auto; }
+.tile ul { font-size: 0.9rem; }
+.strip { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); }
+.c { width: 30px; height: 30px; border-radius: 6px; display: grid; place-items: center; font-size: 0.75rem; font-weight: 700; color: #fff; flex: none; }
+.c.g { background: var(--grass); } .c.i { background: var(--ice); } .c.k { background: var(--crumble); } .c.h { background: transparent; border: 2px dashed var(--accent); }
+.c.s { background: var(--switch); } .c.d { background: var(--door); } .c.t { background: var(--stairs); } .c.r { background: var(--stairs); color: var(--ink); }
+.arrow { color: var(--muted); font-weight: 700; padding-inline: 2px; }
+.t-ice { --c: var(--ice); --soft: var(--ice-soft); }
+.t-crumble { --c: var(--crumble); --soft: var(--crumble-soft); }
+.t-switch { --c: var(--switch); --soft: var(--switch-soft); }
+.t-door { --c: var(--door); --soft: var(--door-soft); }
+.t-stairs { --c: var(--stairs); --soft: var(--stairs-soft); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 0.78rem; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; background: var(--code-bg); }
+td code { white-space: nowrap; }
+
+.todo { list-style: none; padding: 0; margin: 0; display: grid; }
+.todo > li { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr); gap: 10px; padding-block: 9px; border-top: 1px solid var(--line); }
+.todo > li.group { display: block; border: 0; font-family: var(--font-display); font-size: 1.1rem; margin-top: 10px; }
+.box { width: 1.15rem; height: 1.15rem; border: 2px solid var(--line); border-radius: 5px; margin-top: 4px; display: grid; place-items: center; font-size: 0.8rem; color: #fff; }
+.todo li.done .box { background: var(--grass); border-color: var(--grass); }
+.todo li.done .box::after { content: "✓"; }
+.todo .t { display: grid; gap: 2px; min-width: 0; }
+.todo .t span { font-size: 0.86rem; color: var(--muted); }
+</style>
+
+<div class="wrap">
+
+<header class="col">
+  <div class="eyebrow">WHITE FOX · 퍼즐 요소</div>
+  <h1>얼음, 무너지는 칸, 스위치와 문, 계단</h1>
+  <p class="lead">새 칸 네 가지로 퍼즐을 깊게 합니다. 칸이 놓이는 바닥과 보석·시작 같은 물건을 따로 저장하고, 무너진 칸과 열린 문처럼 판 상태가 바뀌는 것까지 이동 규칙과 맵툴 검증이 함께 계산합니다.</p>
+  <div class="meta"><span>작성 <b>2026-10-06</b></span><span>대상 <b>FoxGame (Unity 6000.5)</b></span><span>상태 <b>구현 완료 · 테스트 61개 통과</b></span></div>
+</header>
+
+<section>
+  <div class="col" style="display:grid;gap:10px">
+    <div class="eyebrow">새 칸</div>
+    <h2>칸별 규칙</h2>
+  </div>
+  <div class="tiles">
+    <article class="tile t-ice">
+      <header><h3>얼음</h3><span class="sym">I</span></header>
+      <div class="strip"><span>🦊→</span><span class="c i"></span><span class="c i"></span><span class="c i"></span><span class="c g"></span><span class="arrow">멈춤</span></div>
+      <ul>
+        <li>얼음 칸에 들어서면(걷기·점프 착지 모두) 그 방향으로 한 칸씩 계속 미끄러집니다.</li>
+        <li>얼음이 아닌 칸에 들어서면 그 칸에서 멈춥니다.</li>
+        <li>앞이 장애물·닫힌 문·더 높은 칸이면 지금 얼음 칸에서 멈춥니다.</li>
+        <li>앞이 구멍·맵 밖이면 미끄러져 떨어집니다.</li>
+        <li>미끄러지며 지나간 칸의 보석은 먹습니다. 미끄러지는 동안은 조작할 수 없습니다.</li>
+      </ul>
+    </article>
+    <article class="tile t-crumble">
+      <header><h3>무너지는 칸</h3><span class="sym">C</span></header>
+      <div class="strip"><span class="c k"></span><span class="arrow">밟고 떠나면</span><span class="c h"></span></div>
+      <ul>
+        <li>밟고 서 있을 때는 땅과 같습니다.</li>
+        <li>다른 칸으로 걸어가거나 뛰어 떠나면 무너져 구멍이 됩니다.</li>
+        <li>제자리에서 부딪히거나 제자리 점프를 하는 것은 떠난 게 아닙니다.</li>
+      </ul>
+    </article>
+    <article class="tile t-switch">
+      <header><h3>스위치</h3><span class="sym">W</span></header>
+      <div class="strip"><span class="c s"></span><span class="arrow">밟으면</span><span class="c d"></span><span class="arrow">→</span><span class="c g">열림</span></div>
+      <ul>
+        <li>스위치 칸에 서면(걷기·착지·미끄러져 멈춤) 판의 모든 문이 열립니다.</li>
+        <li>한 번 열린 문은 계속 열려 있습니다.</li>
+      </ul>
+    </article>
+    <article class="tile t-door">
+      <header><h3>문</h3><span class="sym">D</span></header>
+      <div class="strip"><span class="c d"></span><span class="arrow">닫힘 = 장애물</span></div>
+      <ul>
+        <li>닫힌 문은 장애물과 같습니다. 걸어서 못 들어가고, 착지할 수 없으며, 점프로 넘을 수는 있습니다.</li>
+        <li>열린 문은 땅과 같습니다. 문이 땅으로 내려가는 모습으로 열립니다.</li>
+      </ul>
+    </article>
+    <article class="tile t-stairs">
+      <header><h3>계단</h3><span class="sym">T</span></header>
+      <div class="strip"><span class="c g">1</span><span class="c t">2</span><span class="c r">4</span><span class="arrow">걸어서 오름</span></div>
+      <ul>
+        <li>계단 칸과 바로 옆 칸 사이는 높이 차와 상관없이 걸어서 오르내립니다.</li>
+        <li>계단 모양은 옆 칸 중 가장 높은 쪽을 향합니다 (보기용).</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section class="col">
+  <div class="eyebrow">파일 형식</div>
+  <h2>스테이지 파일 버전 3: 바닥과 물건 분리</h2>
+  <p><code>rows</code>는 바닥만, 새 <code>items</code>는 보석·시작만 담습니다. 그래서 얼음이나 무너지는 칸 위에도 보석을 놓을 수 있습니다.</p>
+<pre>{
+  "version": 3,
+  "name": "미끄러운 연못",
+  "id": "미끄러운 연못",
+  "width": 5, "height": 4,
+  "rows":   [ "..D..", ".III.", "W.C..", "....." ],
+  "items":  [ "..G..", "...G.", ".....", "S...." ],
+  "floors": [ "11111", "11111", "11111", "11111" ]
+}</pre>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>층</th><th>기호</th></tr></thead>
+      <tbody>
+        <tr><td><code>rows</code> 바닥</td><td><code>.</code> 땅 · <code>O</code> 구멍 · <code>#</code> 장애물 · <code>I</code> 얼음 · <code>C</code> 무너짐 · <code>W</code> 스위치 · <code>D</code> 문 · <code>T</code> 계단</td></tr>
+        <tr><td><code>items</code> 물건</td><td><code>.</code> 없음 · <code>G</code> 보석 · <code>S</code> 시작</td></tr>
+        <tr><td><code>floors</code> 층</td><td><code>1</code>~<code>9</code> (그대로)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">버전 1·2 파일은 읽을 때 <code>rows</code>의 <code>G</code>·<code>S</code>를 <code>items</code>로 옮기고 그 자리 바닥은 땅으로 둡니다. 맵툴에서 저장하면 버전 3이 됩니다. 보석·시작은 구멍·장애물·문 위에 둘 수 없습니다(검증 오류).</p>
+</section>
+
+<section class="col">
+  <div class="eyebrow">검증</div>
+  <h2>"한 판에 모두 모을 수 있나"</h2>
+  <ul>
+    <li>(칸, 바라보는 방향, 문 열림, 무너진 칸들, 모은 보석들) 상태를 넓이 우선으로 탐색해서, 보석을 모두 모은 상태에 닿는지 봅니다. 게임과 같은 <code>MoveRules</code>를 씁니다.</li>
+    <li>어떤 경로로도 못 먹는 보석은 지금처럼 빨간 테두리로 표시합니다.</li>
+    <li>보석마다 갈 수는 있지만 무너지는 칸 때문에 한 번에 다 모을 수 없으면 "한 판에 모두 모을 수 없음" 오류를 냅니다.</li>
+    <li>맵이 너무 복잡해 탐색이 정해진 한도(상태 50만 개)를 넘으면 경고만 내고 저장은 허용합니다.</li>
+  </ul>
+</section>
+
+<section class="col">
+  <div class="eyebrow">맵툴</div>
+  <h2>붓과 단축키</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>키</th><th>붓</th><th>참고</th></tr></thead>
+      <tbody>
+        <tr><td><code>1</code></td><td>땅</td><td>그 칸의 보석·시작도 지움 (지우개 역할)</td></tr>
+        <tr><td><code>2</code> <code>3</code></td><td>구멍 · 장애물</td><td>물건도 지움</td></tr>
+        <tr><td><code>4</code> <code>5</code> <code>6</code></td><td>얼음 · 무너짐 · 스위치</td><td>물건은 그대로</td></tr>
+        <tr><td><code>7</code></td><td>문</td><td>물건도 지움</td></tr>
+        <tr><td><code>8</code></td><td>계단</td><td>물건은 그대로</td></tr>
+        <tr><td><code>9</code> <code>0</code></td><td>보석 · 시작</td><td>바닥이 못 서는 칸이면 땅으로 바꿈</td></tr>
+        <tr><td><code>H</code>, <code>Q</code>/<code>E</code></td><td>높이</td><td>(높이 붓이 6 → H로 바뀜)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="col" style="display:grid;gap:10px">
+    <div class="eyebrow">게임 화면</div>
+    <h2>예제 스테이지 6~9</h2>
+    <p>테스트가 칸마다 움직여 보며 찍은 화면입니다. 왼쪽 위부터 미끄러운 연못(얼음에서 미끄러져 보석을 먹고 바위 앞에서 멈춤), 무너지는 다리(떠난 칸이 떨어지는 중), 잠긴 보물(분홍 스위치를 밟아 문이 내려감), 돌계단 언덕(계단으로 4층 고원에 오름).</p>
+  </div>
+  <figure style="margin:0">
+    <img src="img/puzzle_sheet.png" alt="얼음, 무너지는 칸, 스위치와 문, 계단 스테이지 화면 4장" style="width:100%;height:auto;border-radius:12px;border:1px solid var(--line)">
+  </figure>
+</section>
+
+<section class="col">
+  <div class="eyebrow">할일</div>
+  <h2>만드는 순서</h2>
+  <ul class="todo">
+    <li class="group">데이터와 규칙</li>
+    <li class="done"><span class="box"></span><div class="t"><b>버전 3 형식</b><span>바닥/물건 분리, 버전 1·2 변환, 새 기호 검사</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>판 상태</b><span>무너진 칸, 문 열림. 칸 종류 판정이 상태를 봄</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>이동 규칙</b><span>얼음 미끄러짐(지나간 길), 무너짐, 스위치, 문, 계단</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>검증</b><span>한 판에 모두 모으기 탐색, 물건 위치 검사, 한도 경고</span></div></li>
+    <li class="group">게임</li>
+    <li class="done"><span class="box"></span><div class="t"><b>그림과 모델</b><span>Codex 얼음·금 간 잔디 텍스처, Blender 스위치·문·계단 모델</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>보드 연출</b><span>칸 무너짐, 문 열림(내려감), 스위치 눌림</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>여우 이동</b><span>미끄러지기 연출, 지나간 칸 보석 먹기</span></div></li>
+    <li class="group">맵툴</li>
+    <li class="done"><span class="box"></span><div class="t"><b>붓과 그리기</b><span>새 칸 5종 표시, 보석·시작을 바닥 위에 겹쳐 그리기, 단축키</span></div></li>
+    <li class="group">마무리</li>
+    <li class="done"><span class="box"></span><div class="t"><b>예제 스테이지</b><span>칸 종류마다 하나씩 (기존 스테이지는 건드리지 않고 뒤에 추가)</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>테스트</b><span>규칙 단위 테스트, 검증, 게임에서 미끄러지기·무너짐·문 열기</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>빌드 확인</b><span>새 스테이지 실행 캡처</span></div></li>
+  </ul>
+</section>
+
+</div>

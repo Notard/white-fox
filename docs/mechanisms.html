@@ -1,0 +1,207 @@
+<title>White Fox 장치와 변하는 지형</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 레이아웃: 다른 문서와 같은 기둥(46rem) + 카드·표 64rem. 장치마다 고유색, 채널 1~4 는 주황·파랑·초록·노랑 */
+:root {
+  --bg: #f4f8fb; --surface: #ffffff; --ink: #22303f; --muted: #5c6b7b; --line: #d8e2ea; --code-bg: #eef3f7;
+  --accent: #2f7fd0; --accent-soft: #e2eefa;
+  --grass: #4f9a3f; --grass-soft: #e3f1dc;
+  --ice: #5bb8f5; --ice-soft: #e4f4fe; --crumble: #a0703f; --crumble-soft: #f5ebe0;
+  --switch: #e0609a; --switch-soft: #fce6f0; --door: #7d68c9; --door-soft: #eeeafb; --stairs: #8a8fa0; --stairs-soft: #eceef2;
+  --bad: #c43d3d;
+  --font-display: "Jua", "Noto Sans KR", system-ui, sans-serif;
+  --font-body: "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131b23; --surface: #1b2530; --ink: #e4ecf3; --muted: #9fb0c0; --line: #2d3a47; --code-bg: #16202a;
+    --accent: #6db0f0; --accent-soft: #172a3d; --grass: #74c260; --grass-soft: #1f3320;
+    --ice: #7ccaf7; --ice-soft: #16303f; --crumble: #c99366; --crumble-soft: #33261a;
+    --switch: #f08ab6; --switch-soft: #3a1f2c; --door: #a594e6; --door-soft: #272240; --stairs: #a5aabb; --stairs-soft: #252a33;
+    --bad: #f07a7a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131b23; --surface: #1b2530; --ink: #e4ecf3; --muted: #9fb0c0; --line: #2d3a47; --code-bg: #16202a;
+  --accent: #6db0f0; --accent-soft: #172a3d; --grass: #74c260; --grass-soft: #1f3320;
+  --ice: #7ccaf7; --ice-soft: #16303f; --crumble: #c99366; --crumble-soft: #33261a;
+  --switch: #f08ab6; --switch-soft: #3a1f2c; --door: #a594e6; --door-soft: #272240; --stairs: #a5aabb; --stairs-soft: #252a33;
+  --bad: #f07a7a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15.5px; line-height: 1.7; }
+.wrap { max-width: 64rem; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px; display: grid; gap: 52px; }
+.col { max-width: 46rem; }
+h1, h2 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.8rem); line-height: 1.2; }
+h2 { font-size: 1.6rem; line-height: 1.3; }
+h3 { margin: 0; }
+p { margin: 0; }
+section { display: grid; gap: 18px; }
+.eyebrow { font-size: 0.78rem; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; }
+.lead { font-size: 1.08rem; color: var(--muted); max-width: 42rem; }
+.note { font-size: 0.85rem; color: var(--muted); }
+code { font-family: var(--font-mono); font-size: 0.88em; }
+:not(pre) > code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; }
+pre { margin: 0; background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.55; }
+header { display: grid; gap: 14px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--muted); font-size: 0.88rem; }
+.meta b { color: var(--ink); font-weight: 500; }
+ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(14.5rem, 1fr)); gap: 14px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: 12px; padding: 16px 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.tile header { display: flex; align-items: center; gap: 10px; }
+.tile h3 { font-family: var(--font-display); font-weight: 400; font-size: 1.3rem; }
+.sym { font-family: var(--font-mono); font-weight: 600; font-size: 0.85rem; background: var(--soft); color: var(--c); border-radius: 6px; padding: 0 8px; margin-left: auto; }
+.tile ul { font-size: 0.9rem; }
+.strip { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); }
+.c { width: 30px; height: 30px; border-radius: 6px; display: grid; place-items: center; font-size: 0.75rem; font-weight: 700; color: #fff; flex: none; }
+.c.g { background: var(--grass); } .c.i { background: var(--ice); } .c.k { background: var(--crumble); } .c.h { background: transparent; border: 2px dashed var(--accent); }
+.c.s { background: var(--switch); } .c.d { background: var(--door); } .c.t { background: var(--stairs); } .c.r { background: var(--stairs); color: var(--ink); }
+.arrow { color: var(--muted); font-weight: 700; padding-inline: 2px; }
+.t-ice { --c: var(--ice); --soft: var(--ice-soft); }
+.t-crumble { --c: var(--crumble); --soft: var(--crumble-soft); }
+.t-switch { --c: var(--switch); --soft: var(--switch-soft); }
+.t-door { --c: var(--door); --soft: var(--door-soft); }
+.t-stairs { --c: var(--stairs); --soft: var(--stairs-soft); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 0.78rem; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; background: var(--code-bg); }
+td code { white-space: nowrap; }
+
+.todo { list-style: none; padding: 0; margin: 0; display: grid; }
+.todo > li { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr); gap: 10px; padding-block: 9px; border-top: 1px solid var(--line); }
+.todo > li.group { display: block; border: 0; font-family: var(--font-display); font-size: 1.1rem; margin-top: 10px; }
+.box { width: 1.15rem; height: 1.15rem; border: 2px solid var(--line); border-radius: 5px; margin-top: 4px; display: grid; place-items: center; font-size: 0.8rem; color: #fff; }
+.todo li.done .box { background: var(--grass); border-color: var(--grass); }
+.todo li.done .box::after { content: "✓"; }
+.todo .t { display: grid; gap: 2px; min-width: 0; }
+.todo .t span { font-size: 0.86rem; color: var(--muted); }
+
+.ch { display:inline-block; width:0.9em; height:0.9em; border-radius:50%; vertical-align:-0.1em; margin-right:3px; }
+.ch1 { background:#f08a3c; } .ch2 { background:#3c8ff0; } .ch3 { background:#3cbf7a; } .ch4 { background:#e8c234; }
+.c.l { background: var(--crumble); } .c.p { background: var(--switch); } .c.b { background: var(--stairs); } .c.e { background: var(--door); } .c.x { background: #b07a45; }
+</style>
+<div class="wrap">
+
+<header class="col">
+  <div class="eyebrow">WHITE FOX · 장치와 변하는 지형</div>
+  <h1>레버, 누름판, 미는 블록</h1>
+  <p class="lead">여우가 물건을 건드리면 지형이 바뀌고, 그래서 못 가던 곳에 갈 수 있게 됩니다. 레버를 당기면 돌기둥이 솟아 다리가 되고, 누름판을 누르는 동안 땅이 오르내리고, 블록을 밀어 구멍을 메웁니다. 모두 지금의 턴 방식과 "클리어 가능" 검증 안에서 동작합니다.</p>
+  <div class="meta"><span>작성 <b>2026-10-06</b></span><span>대상 <b>FoxGame (Unity 6000.5)</b></span><span>상태 <b>완료</b></span></div>
+</header>
+
+<section>
+  <div class="col" style="display:grid;gap:10px">
+    <div class="eyebrow">장치</div>
+    <h2>건드리는 것 셋, 바뀌는 땅 둘</h2>
+    <p class="note">장치와 바뀌는 땅은 <b>채널</b>(<span class="ch ch1"></span>1 <span class="ch ch2"></span>2 <span class="ch ch3"></span>3 <span class="ch ch4"></span>4)로 이어집니다. 같은 색끼리 연결되고, 채널에 켜진 장치가 하나라도 있으면 그 채널은 켜짐입니다.</p>
+  </div>
+  <div class="tiles">
+    <article class="tile t-crumble">
+      <header><h3>레버</h3><span class="sym">L</span></header>
+      <ul>
+        <li>레버 쪽으로 걸어가 부딪히면 당깁니다. 여우는 제자리, 한 턴이 지납니다.</li>
+        <li>당길 때마다 켜짐 ↔ 꺼짐이 바뀝니다 (계속 유지).</li>
+        <li>레버 칸은 바위처럼 막혀 있어 올라설 수 없습니다.</li>
+      </ul>
+    </article>
+    <article class="tile t-switch">
+      <header><h3>누름판</h3><span class="sym">P</span></header>
+      <ul>
+        <li>여우나 블록이 올라가 있는 <b>동안만</b> 켜집니다.</li>
+        <li>내려오면 바로 꺼집니다. 블록을 올려 두면 계속 켜 둘 수 있습니다.</li>
+        <li>기존 스위치(<code>W</code>, 한 번 밟으면 문이 영원히 열림)와는 따로입니다.</li>
+      </ul>
+    </article>
+    <article class="tile t-stairs" style="--c:#b07a45;--soft:#f5ebe0">
+      <header><h3>미는 블록</h3><span class="sym">K</span></header>
+      <ul>
+        <li>블록 쪽으로 걸어가면 한 칸 밀고 여우도 한 칸 들어갑니다.</li>
+        <li>건너편이 막혔거나(바위·레버·문·블록·맵 밖) 더 높은 땅이면 밀리지 않습니다. 낮은 땅으로는 떨어집니다.</li>
+        <li><b>구멍으로 밀면 떨어져 구멍을 메웁니다.</b> 그 칸은 밀었던 칸 높이의 땅이 됩니다.</li>
+        <li>누름판을 누르고, 점프로 넘을 수는 있지만 올라설 수는 없습니다. 얼음에서 미끄러지지 않습니다.</li>
+      </ul>
+    </article>
+    <article class="tile t-stairs">
+      <header><h3>솟는 다리</h3><span class="sym">B</span></header>
+      <ul>
+        <li>꺼짐: 구멍 (자리에 옅은 표시). 켜짐: 아래에서 돌기둥이 솟아 땅이 됩니다.</li>
+        <li>다리 위에 서 있는데 꺼지면 여우는 떨어지고, 블록은 떨어져 그 칸을 메웁니다.</li>
+      </ul>
+    </article>
+    <article class="tile t-door">
+      <header><h3>승강 땅</h3><span class="sym">E</span></header>
+      <ul>
+        <li>꺼짐 높이와 켜짐 높이를 따로 정합니다 (예: 1층 ↔ 3층).</li>
+        <li>올라가면 계단 사이 디딤돌이, 내려가면 막던 벽이 길이 됩니다.</li>
+        <li>위에 선 여우나 블록은 같이 오르내립니다.</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section class="col">
+  <div class="eyebrow">한 턴의 순서</div>
+  <h2>건드림 → 지형 변화 → 적·발판</h2>
+  <ol style="margin:0;padding-left:1.3em;display:grid;gap:4px">
+    <li>여우 행동: 걷기·점프·밀기·당기기·기다리기 중 하나.</li>
+    <li>무너지는 칸, 스위치(기존), 블록 이동·구멍 메우기, 레버 바꾸기.</li>
+    <li>채널 다시 계산: 레버 켜짐 + 누름판 위의 여우·블록.</li>
+    <li>바뀐 땅 반영: 다리가 사라진 칸의 블록은 떨어져 메움, 여우는 떨어짐.</li>
+    <li>턴 +1 → 발판·적 이동 → 부딪힘 확인 (지금과 같음).</li>
+  </ol>
+  <div class="strip" style="margin-top:6px">
+    <span class="c g">여우</span><span class="c x">K</span><span class="c h"></span><span class="arrow">→ 밀기 →</span>
+    <span class="c g"></span><span class="c g">여우</span><span class="c x" style="opacity:.6">메움</span>
+  </div>
+</section>
+
+<section class="col">
+  <div class="eyebrow">파일 형식</div>
+  <h2>스테이지 파일 버전 5</h2>
+<pre>"rows":     [ "..B..", "L.P.E" ],   // 새 바닥 기호: L 레버, P 누름판, B 솟는 다리, E 승강 땅
+"items":    [ ".K...", "S...G" ],   // 새 물건: K 미는 블록
+"channels": [ "..1..", "1.2.2" ],   // 장치·바뀌는 땅의 채널 1~4 (그 밖은 .)
+"floorsOn": [ ".....", "....3" ]    // 승강 땅이 켜졌을 때 층 (그 밖은 .)</pre>
+  <p class="note">버전 4 이하 파일은 장치가 없는 것으로 읽습니다. 검증은 채널에 켜는 장치가 없거나 바뀌는 땅이 없으면 경고합니다.</p>
+</section>
+
+<section class="col">
+  <div class="eyebrow">맵툴</div>
+  <h2>붓과 채널</h2>
+  <ul>
+    <li>붓 추가: 레버, 누름판, 솟는 다리, 승강 땅, 블록.</li>
+    <li>채널 고르기 (<b>C</b> 키로 1→2→3→4). 장치·바뀌는 땅을 칠하면 지금 채널이 붙습니다.</li>
+    <li>승강 땅은 칠할 때 <b>높이 붓의 층</b>이 "켜졌을 때 층"이 됩니다. 칸에 "1→3" 처럼 보입니다.</li>
+    <li>그리드에서 장치·땅은 채널 색 테두리로, 블록은 나무 상자로 그립니다.</li>
+    <li>검증은 블록 위치, 메운 구멍, 레버 상태까지 따져 한 판에 모든 보석을 모을 수 있는지 봅니다.</li>
+  </ul>
+</section>
+
+<section class="col">
+  <div class="eyebrow">할일</div>
+  <h2>만드는 순서</h2>
+  <ul class="todo">
+    <li class="group">규칙</li>
+    <li class="done"><span class="box"></span><div class="t"><b>데이터</b><span>버전 5: 기호 L·P·B·E·K, channels, floorsOn, JSON 검사, 옛 버전 읽기</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>이동 규칙</b><span>밀기·메우기, 레버 당기기, 채널 계산, 바뀌는 칸 종류·높이, 다리가 꺼지면 떨어짐</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>검증</b><span>블록·메운 구멍·레버까지 포함한 탐색, 채널 연결 경고</span></div></li>
+    <li class="group">게임</li>
+    <li class="done"><span class="box"></span><div class="t"><b>모델</b><span>Blender 레버·누름판·나무 상자, 채널 표시 고리, 셀 셰이딩</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>지형</b><span>솟는 다리·승강 땅을 떼어 낸 기둥으로, 솟아오름·오르내림 연출</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>여우</b><span>밀기·당기기 동작, 승강 땅 위에서 같이 움직임, 다리가 꺼지면 떨어짐</span></div></li>
+    <li class="group">맵툴 · 마무리</li>
+    <li class="done"><span class="box"></span><div class="t"><b>맵툴</b><span>새 붓, 채널 고르기, 승강 높이, 그리드 표시</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>예제 스테이지</b><span>13 레버와 돌다리, 14 누름판과 상자, 15 구멍 메우기, 16 오르내리는 땅</span></div></li>
+    <li class="done"><span class="box"></span><div class="t"><b>테스트 · 빌드</b><span>규칙 단위 테스트, 게임 안 동작, 캡처, Windows 빌드</span></div></li>
+  </ul>
+</section>
+
+</div>
