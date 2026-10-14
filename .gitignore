@@ -24,6 +24,10 @@ FoxGame/Assets/Tests/EditMode/TempStages*
 
 # Windows 빌드 결과
 Build/
+FoxGame/Data/
+FoxGame/Assets/Resources/PerformanceTestRunInfo.json*
+FoxGame/Assets/Resources/PerformanceTestRunSettings.json*
+tools/__pycache__/
 
 # Blender 백업
 *.blend1

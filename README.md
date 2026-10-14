@@ -4,11 +4,27 @@
 
 ![게임 화면](FoxGame/Screenshots/mech_lever_after.png)
 
-- 플랫폼: **Windows 전용**
+- 플랫폼: **Windows · 웹 (PC 브라우저)**
 - 엔진: Unity 6000.5.7f1 (URP 17.5, Input System)
 - 모델: Blender 5.2 (모두 Python 스크립트로 생성)
 - 스테이지: 16개 (맵툴로 만들고 JSON으로 저장)
 - 테스트: EditMode 68개 + PlayMode 32개 = 100개 통과
+
+## 웹에서 플레이
+
+[White Fox 웹 버전](https://notard.github.io/white-fox/)에서 실행할 수 있습니다.
+W A S D로 이동하고, Space로 점프합니다. 진행 상황은 사용하는 브라우저에 저장됩니다.
+
+웹 빌드와 배포는 다음 순서로 진행합니다.
+
+```powershell
+& 'C:\Program Files\Unity\Hub\Editor\6000.5.7f1\Editor\Unity.exe' -batchmode -nographics -projectPath FoxGame -buildTarget WebGL -executeMethod BuildWebGL.Build -quit -logFile Build/webgl-build.log
+python tools/prepare_web_page.py
+python tools/publish_web.py
+```
+
+Unity 빌드 완료 후 Python 명령을 실행합니다. 웹 빌드는 `Build/WebGL`에 생성되며,
+GitHub Pages는 `gh-pages` 브랜치에서 배포합니다. 웹 UI에 포함된 Gaegu 글꼴은 SIL OFL 1.1 라이선스를 따릅니다.
 
 ---
 

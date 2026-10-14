@@ -76,8 +76,19 @@ public static class UiKit
     }
 
     static Font font;
-    public static Font Font => font != null ? font
-        : font = Font.CreateDynamicFontFromOSFont(new[] { "Malgun Gothic", "맑은 고딕", "Segoe UI", "Arial" }, 32);
+    public static Font Font
+    {
+        get
+        {
+            if (font != null) return font;
+#if UNITY_WEBGL && !UNITY_EDITOR
+            font = Resources.Load<Font>("Fonts/Gaegu-Bold");
+#else
+            font = Font.CreateDynamicFontFromOSFont(new[] { "Malgun Gothic", "맑은 고딕", "Segoe UI", "Arial" }, 32);
+#endif
+            return font;
+        }
+    }
 
     // ------------------------------------------------------------ 기본 요소
     public static Canvas CreateCanvas(Transform parent, string name = "Canvas", int sortingOrder = 0)

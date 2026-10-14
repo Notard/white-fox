@@ -153,7 +153,9 @@ public class MenuController : MonoBehaviour
         ContinueButton = UiKit.Button(col, "이어하기", ContinueGame, false, 300, 66);
         continueLabel = ContinueButton.GetComponentInChildren<Text>();
         UiKit.Button(col, "설정", () => ShowPage(MenuPage.Settings), false, 300, 66);
+#if !UNITY_WEBGL || UNITY_EDITOR
         UiKit.Button(col, "종료", SceneFlow.Quit, false, 300, 66);
+#endif
         firstFocus[MenuPage.Main] = start;
     }
 

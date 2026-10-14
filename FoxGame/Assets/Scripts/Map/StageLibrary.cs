@@ -51,10 +51,12 @@ public static class StageProgress
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void ApplyCommandLine()
     {
+#if !UNITY_WEBGL || UNITY_EDITOR
         var args = Environment.GetCommandLineArgs();
         int i = Array.IndexOf(args, "-stage");
         if (i >= 0 && i + 1 < args.Length && int.TryParse(args[i + 1], out int n))
             Current = Mathf.Max(0, n - 1);
+#endif
     }
 
 #if UNITY_EDITOR
