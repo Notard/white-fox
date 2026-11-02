@@ -48,3 +48,10 @@ Desktop.ini
 # 창을 찍은 캡처 (가장자리에 바탕화면이 조금 찍힘) · 디버그 캡처
 FoxGame/Screenshots/build_*.png
 FoxGame/Screenshots/_check.png
+
+# Unity MCP 서버 (dotnet publish 결과는 각자 만든다)
+tools/UnityMcp/bin/
+tools/UnityMcp/obj/
+tools/UnityMcp.Tests/bin/
+tools/UnityMcp.Tests/obj/
+FoxGame/Screenshots/mcp/

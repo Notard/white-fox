@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "unity": {
+      "type": "stdio",
+      "command": "tools/UnityMcp/bin/publish/UnityMcp.exe",
+      "args": [],
+      "env": {}
+    }
+  }
+}
