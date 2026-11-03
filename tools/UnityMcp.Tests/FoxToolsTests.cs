@@ -55,6 +55,21 @@ public class FoxToolsTests
     }
 
     [Fact]
+    public void 맵_도구는_JSON을_한_줄로_만들어_보낸다()
+    {
+        using var fake = new FakeBridge(cmd => "답:" + cmd);
+        Bridge.Port = fake.Port;
+
+        Assert.Equal("답:list_stages", FoxTools.ListStages());
+        Assert.Equal("답:read_stage 16", FoxTools.ReadStage(16));
+        Assert.Equal("답:open_in_maptool 17", FoxTools.OpenInMapTool(17));
+        Assert.Equal("답:validate_map {\"name\": \"a\",    \"rows\": [\"..\"] }", FoxTools.ValidateMap("{\"name\": \"a\",\r\n  \"rows\": [\"..\"] }"));
+        Assert.Equal("답:create_stage {\"name\":\"b\"}", FoxTools.CreateStage("\n{\"name\":\"b\"}\n"));
+        Assert.Contains("비어 있음", FoxTools.CreateStage("  \n "));
+        Assert.Equal(5, fake.Received.Count);
+    }
+
+    [Fact]
     public void 한글_답이_깨지지_않는다()
     {
         using var fake = new FakeBridge(_ => "스테이지 1/16 \"첫 번째 숲\" · 보석 0/5");

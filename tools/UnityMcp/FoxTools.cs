@@ -63,6 +63,44 @@ public static class FoxTools
         "지금 스테이지를 처음부터 다시 시작한다 (R 키와 같음). 시작 연출이 끝나 움직일 수 있게 되면 게임 상태를 돌려준다.")]
     public static string RestartStage() => Bridge.Send("restart_stage");
 
+    // ------------------------------------------------------------ 맵툴: 새 스테이지 만들기만. 기존 스테이지는 읽기만 한다.
+    const string JsonHelp =
+        "JSON 은 맵툴 파일과 같은 형식(version 5): name, width, height, rows(바닥: . O # I C W D T L P B E), items(. G S K), floors(1~9 층 숫자), " +
+        "channels/floorsOn(장치 채널, 없으면 생략), movers([{kind: snowball|owl|platform, path: [{x,y},...]}]). " +
+        "rows/items/floors 는 첫 줄이 y가 가장 큰 줄(먼 쪽)이고 각 줄의 글자가 x=0 부터다. 시작 S 는 하나, 보석 G 는 1개 이상.";
+
+    [McpServerTool(Name = "list_stages", ReadOnly = true), Description(
+        "스테이지 파일 목록: 번호, 이름, 크기, 보석 수, 층, 움직이는 것, 검증 결과 한 줄씩. 새 스테이지가 받을 번호도 알려준다.")]
+    public static string ListStages() => Bridge.Send("list_stages");
+
+    [McpServerTool(Name = "read_stage", ReadOnly = true), Description(
+        "스테이지 하나의 파일 경로, 격자 미리보기, JSON 전체를 돌려준다 (1부터). 새 스테이지의 본보기로 쓴다.")]
+    public static string ReadStage([Description("스테이지 번호 (1부터)")] int stage) => Bridge.Send($"read_stage {stage}");
+
+    [McpServerTool(Name = "validate_map", ReadOnly = true), Description(
+        "스테이지 JSON 을 저장하지 않고 검증만 한다: 형식 오류, 시작·보석 규칙, 모든 보석을 모을 수 있는지(상태 탐색), 먹을 수 없는 보석. " +
+        "격자 미리보기도 돌려준다. " + JsonHelp)]
+    public static string ValidateMap([Description("스테이지 JSON 전체")] string json) =>
+        OneLine(json) is { } j ? Bridge.Send("validate_map " + j) : "json 이 비어 있음";
+
+    [McpServerTool(Name = "create_stage"), Description(
+        "검증을 통과한 스테이지 JSON 을 마지막 번호 뒤에 새 파일(stage_NN.json)로 만든다. 기존 스테이지는 절대 고치거나 지우지 않는다. " +
+        "같은 이름이 있거나 검증에 실패하면 만들지 않고 이유를 돌려준다. 만든 뒤 load_stage 로 바로 플레이할 수 있다. " + JsonHelp)]
+    public static string CreateStage([Description("스테이지 JSON 전체 (name 필수)")] string json) =>
+        OneLine(json) is { } j ? Bridge.Send("create_stage " + j, TimeSpan.FromSeconds(60)) : "json 이 비어 있음";
+
+    [McpServerTool(Name = "open_in_maptool"), Description(
+        "Unity 맵툴 창을 열어 그 스테이지를 보여준다 (1부터). 사람이 눈으로 확인하고 다듬을 때. 맵툴에 저장 안 한 변경이 있으면 에디터가 물어본다.")]
+    public static string OpenInMapTool([Description("스테이지 번호 (1부터)")] int stage) =>
+        Bridge.Send($"open_in_maptool {stage}", TimeSpan.FromSeconds(60));
+
+    /// <summary>브리지는 한 줄 명령만 받으므로 JSON 의 줄바꿈을 공백으로 바꾼다. 비어 있으면 null.</summary>
+    static string? OneLine(string json)
+    {
+        var j = (json ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+        return j.Length == 0 ? null : j;
+    }
+
     [McpServerTool(Name = "read_console", ReadOnly = true), Description(
         "Unity 콘솔의 최근 로그를 읽는다. 기본은 에러와 경고만. includeInfo 가 true 면 일반 로그도.")]
     public static string ReadConsole(

@@ -11,8 +11,10 @@ using UnityEngine.SceneManagement;
 /// MCP 브리지가 실행하는 명령. 여는 것은 이 목록뿐이다 (파일 쓰기·씬 저장·임의 코드 실행은 열지 않는다).
 ///   ping · play_mode start|stop|status · load_stage n · restart_stage · get_game_state · act w|a|s|d|jump|wait
 ///   run_actions a b c ... · read_console [개수] [all] · screenshot
+///   list_stages · read_stage n · validate_map {json} · create_stage {json} · open_in_maptool n
 /// act·run_actions 는 키보드와 같은 입구(FoxController.TryMove/TryJump/TryWait)만 쓴다. 여우를 직접 옮기지 않는다.
 /// restart_stage 는 R 키와 같은 GameManager.Restart 를 부른다.
+/// 맵 명령은 새 스테이지를 마지막 번호 뒤에 만들기만 한다. 기존 스테이지 파일은 고치거나 지우지 않는다 (원본은 사람이 맵툴에서).
 /// MCP 로 연 스테이지는 테스트 저장 키를 써서 실제 진행·기록을 건드리지 않는다.
 /// </summary>
 static class McpCommands
@@ -24,11 +26,30 @@ static class McpCommands
         poll = null;
         seconds = 0;
         timeoutReply = null;
-        var p = line.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (p.Length == 0) return "빈 명령";
+        line = line.Trim();
+        if (line.Length == 0) return "빈 명령";
 
+        // JSON 을 받는 명령은 공백으로 쪼개지 않고 첫 낱말 뒤 전부를 넘긴다
+        int space = line.IndexOf(' ');
+        string word = space < 0 ? line : line.Substring(0, space);
+        string rest = space < 0 ? "" : line.Substring(space + 1).Trim();
+        if (word == "validate_map") return ValidateMap(rest);
+        if (word == "create_stage") return CreateStage(rest);
+
+        var p = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         switch (p[0])
         {
+            case "list_stages":
+                return ListStages();
+
+            case "read_stage":
+                if (p.Length < 2 || !int.TryParse(p[1], out var readIndex)) return "사용법: read_stage <번호 1부터>";
+                return ReadStage(readIndex);
+
+            case "open_in_maptool":
+                if (p.Length < 2 || !int.TryParse(p[1], out var showIndex)) return "사용법: open_in_maptool <번호 1부터>";
+                return OpenInMapTool(showIndex);
+
             case "ping":
                 return "pong " + (EditorApplication.isPlaying ? "playing" : "editing");
 
@@ -304,6 +325,129 @@ static class McpCommands
         if (s == MapData.Door && st.doorsOpen) return 'd';
         if (s == MapData.Bridge && st.ChannelOn(map.ChannelAt(c))) return 'b';
         return s;
+    }
+
+    // ------------------------------------------------------------ 맵툴 (새 스테이지 만들기만)
+    static readonly StageFiles Files = new();
+
+    static string ListStages()
+    {
+        var paths = Files.List();
+        if (paths.Count == 0) return $"스테이지가 없음 ({StageLibrary.AssetFolder})";
+        var sb = new StringBuilder();
+        sb.AppendLine($"스테이지 {paths.Count}개 ({StageLibrary.AssetFolder}). 새 스테이지는 {paths.Count + 1}번으로 만들어짐.");
+        for (int i = 0; i < paths.Count; i++)
+        {
+            try
+            {
+                var m = Files.Load(paths[i]);
+                var v = MapValidator.Validate(m);
+                string movers = m.movers.Count > 0 ? $", 움직이는 것 {m.movers.Count}" : "";
+                string check = v.IsValid ? (v.warnings.Count > 0 ? $"경고 {v.warnings.Count}" : "통과") : $"오류 {v.errors.Count}";
+                sb.AppendLine($"{i + 1,2}. \"{m.name}\" {m.Width}×{m.Height}, 보석 {m.Gems.Count}, 최고 {m.HighestFloor}층{movers} · 검증 {check}");
+            }
+            catch (MapFormatException e) { sb.AppendLine($"{i + 1,2}. 읽기 실패: {e.Message}"); }
+        }
+        return sb.ToString().TrimEnd();
+    }
+
+    static string ReadStage(int stage)
+    {
+        var paths = Files.List();
+        if (stage < 1 || stage > paths.Count) return $"스테이지는 1~{paths.Count}";
+        var json = File.ReadAllText(paths[stage - 1]);
+        try
+        {
+            var m = MapJson.FromJson(json, Path.GetFileName(paths[stage - 1]));
+            return $"{paths[stage - 1]}\n\n{MapPreview(m)}\n\n{json}";
+        }
+        catch (MapFormatException e) { return $"{paths[stage - 1]}\n읽기 실패: {e.Message}\n\n{json}"; }
+    }
+
+    /// <summary>JSON 을 읽고 검증한다. 저장하지 않는다.</summary>
+    static string ValidateMap(string json)
+    {
+        if (json.Length == 0) return "사용법: validate_map {스테이지 JSON}";
+        var (map, error) = Parse(json);
+        if (map == null) return error;
+        var v = MapValidator.Validate(map);
+        return Report(map, v);
+    }
+
+    /// <summary>검증을 통과한 맵만 마지막 번호 뒤에 새 파일로 만든다. 기존 파일은 건드리지 않는다.</summary>
+    static string CreateStage(string json)
+    {
+        if (json.Length == 0) return "사용법: create_stage {스테이지 JSON}";
+        var (map, error) = Parse(json);
+        if (map == null) return error;
+        if (string.IsNullOrWhiteSpace(map.name) || map.name == "새 스테이지") return "name 을 정해 주세요 (스테이지 제목으로 화면에 보임)";
+        foreach (var p in Files.List())
+        {
+            try { if (Files.Load(p).name == map.name) return $"같은 이름 \"{map.name}\" 의 스테이지가 이미 있음 ({p}). 다른 이름을 쓰세요"; }
+            catch (MapFormatException) { }
+        }
+        var v = MapValidator.Validate(map);
+        if (!v.IsValid) return "검증을 통과하지 못해 만들지 않음\n\n" + Report(map, v);
+
+        map.id = null;   // 새 기록
+        var path = Files.Create(map);
+        int number = Files.List().IndexOf(path) + 1;
+        return $"스테이지 {number} 로 만듦: {path}\n(플레이: load_stage {number} · 맵툴에서 보기: open_in_maptool {number})\n\n{Report(map, v)}";
+    }
+
+    static string OpenInMapTool(int stage)
+    {
+        var paths = Files.List();
+        if (stage < 1 || stage > paths.Count) return $"스테이지는 1~{paths.Count}";
+        var window = MapEditorWindow.Open();
+        return window.ShowStage(paths[stage - 1])
+            ? $"맵툴에서 스테이지 {stage} 를 엶"
+            : $"맵툴을 열었지만 스테이지 {stage} 로 바꾸지 못함 (저장 안 한 변경을 취소했거나 파일을 못 읽음)";
+    }
+
+    static (MapData map, string error) Parse(string json)
+    {
+        try { return (MapJson.FromJson(json, "보낸 JSON"), null); }
+        catch (MapFormatException e) { return (null, e.Message); }
+    }
+
+    static string Report(MapData map, MapValidation v)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"\"{map.name}\" {map.Width}×{map.Height}, 보석 {map.Gems.Count}, 최고 {map.HighestFloor}층, 움직이는 것 {map.movers.Count}");
+        sb.AppendLine(v.IsValid ? "검증 통과" : "검증 실패");
+        foreach (var e in v.errors) sb.AppendLine("- 오류: " + e);
+        foreach (var w in v.warnings) sb.AppendLine("- 경고: " + w);
+        if (v.unreachableGems.Count > 0) sb.AppendLine("- 먹을 수 없는 보석: " + string.Join(" ", v.unreachableGems.Select(Fmt)));
+        sb.AppendLine();
+        sb.Append(MapPreview(map));
+        return sb.ToString();
+    }
+
+    /// <summary>게임 상태와 같은 모양의 격자 (바닥 기호 + 층 + 물건). 장치는 채널 번호를 덧붙인다.</summary>
+    static string MapPreview(MapData map)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("맨 윗줄이 y가 가장 큰 줄. JSON 의 rows/items/floors 는 첫 줄이 y가 가장 큰 줄이다 (화면과 같은 방향).");
+        for (int y = map.Height - 1; y >= 0; y--)
+        {
+            sb.Append($"y{y,-2}|");
+            for (int x = 0; x < map.Width; x++)
+            {
+                var c = new Vector2Int(x, y);
+                char item = map.ItemAt(c) == MapData.NoItem ? ' ' : map.ItemAt(c);
+                int ch = map.ChannelAt(c);
+                sb.Append(' ').Append(map.SymbolAt(c)).Append(map.FloorAt(c)).Append(item).Append(ch > 0 ? (char)('0' + ch) : ' ');
+            }
+            sb.AppendLine();
+        }
+        sb.Append("    ");
+        for (int x = 0; x < map.Width; x++) sb.Append($" x{x,-3}");
+        sb.AppendLine();
+        sb.AppendLine("바닥: . 땅, O 구멍, # 막힘, I 얼음, C 무너짐, W 스위치, D 문, T 계단, L 레버, P 누름판, B 다리, E 승강 땅 · 물건: S 시작, G 보석, K 블록 · 네 번째 글자는 장치 채널");
+        if (map.movers.Count > 0)
+            foreach (var m in map.movers) sb.AppendLine($"- {m.kind}: {string.Join(" → ", m.path.Select(Fmt))}");
+        return sb.ToString().TrimEnd();
     }
 
     // ------------------------------------------------------------ 화면

@@ -135,6 +135,17 @@ public class MapEditorWindow : EditorWindow
 
     public void SelectStage(int index) => Select(index);
 
+    /// <summary>MCP 가 새 스테이지를 만든 뒤 부른다: 목록을 다시 읽고 그 파일을 고른다. 저장 안 한 변경이 있으면 물어본다.</summary>
+    public bool ShowStage(string path)
+    {
+        RefreshList();
+        int index = stagePaths.IndexOf(path);
+        if (index < 0) return false;
+        Select(index);
+        Focus();
+        return selected == index;
+    }
+
     void Select(int index, bool force = false)
     {
         if (index < 0 || index >= stagePaths.Count) return;
