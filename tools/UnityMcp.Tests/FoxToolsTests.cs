@@ -32,6 +32,29 @@ public class FoxToolsTests
     }
 
     [Fact]
+    public void run_actions는_행동_열을_정리해서_한_명령으로_보낸다()
+    {
+        using var fake = new FakeBridge(cmd => "답:" + cmd);
+        Bridge.Port = fake.Port;
+
+        Assert.Equal("답:run_actions d d w jump", FoxTools.RunActions("d, d,w  jump"));
+        Assert.Equal("답:restart_stage", FoxTools.RestartStage());
+        Assert.Equal(["run_actions d d w jump", "restart_stage"], fake.Received.ToArray());
+    }
+
+    [Fact]
+    public void run_actions는_잘못된_행동이_하나라도_있으면_보내지_않는다()
+    {
+        using var fake = new FakeBridge(_ => "보내면 안 됨");
+        Bridge.Port = fake.Port;
+
+        Assert.Contains("\"fly\"", FoxTools.RunActions("w fly d"));
+        Assert.Contains("행동이 없음", FoxTools.RunActions("  ,  "));
+        Assert.Contains("100개", FoxTools.RunActions(string.Join(' ', Enumerable.Repeat("w", 101))));
+        Assert.Empty(fake.Received);
+    }
+
+    [Fact]
     public void 한글_답이_깨지지_않는다()
     {
         using var fake = new FakeBridge(_ => "스테이지 1/16 \"첫 번째 숲\" · 보석 0/5");

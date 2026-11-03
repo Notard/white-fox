@@ -19,19 +19,19 @@ public static class Bridge
     public const string Unreachable = "Unity 브리지에 연결할 수 없음";
 
     /// <summary>명령을 보내고 답을 돌려준다. 연결이 안 되면 예외 대신 이유를 문장으로 돌려준다.</summary>
-    public static string Send(string command)
+    public static string Send(string command, TimeSpan? timeout = null)
     {
-        try { return SendOrThrow(command); }
+        try { return SendOrThrow(command, timeout ?? ReplyTimeout); }
         catch (SocketException e) { return $"{Unreachable} ({e.SocketErrorCode}): Unity 에디터에 FoxGame 이 열려 있는지, 스크립트 컴파일 중이 아닌지 확인"; }
         catch (IOException e) { return $"{Unreachable} (답을 받는 중 끊김: {e.Message}). 컴파일이나 Play 전환 중일 수 있음"; }
     }
 
-    static string SendOrThrow(string command)
+    static string SendOrThrow(string command, TimeSpan timeout)
     {
         using var client = new TcpClient();
         if (!client.ConnectAsync("127.0.0.1", Port).Wait(TimeSpan.FromSeconds(2)))
             throw new SocketException((int)SocketError.TimedOut);
-        client.ReceiveTimeout = (int)ReplyTimeout.TotalMilliseconds;
+        client.ReceiveTimeout = (int)timeout.TotalMilliseconds;
         using var stream = client.GetStream();
         var line = Encoding.UTF8.GetBytes(command.Replace('\n', ' ') + "\n");
         stream.Write(line);

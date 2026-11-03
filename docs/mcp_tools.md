@@ -14,6 +14,8 @@ Claude Code ──stdio──▶ tools/UnityMcp (.NET 콘솔 MCP 서버) ──T
 | `load_stage` | 스테이지 열기 (1부터), 시작 연출이 끝나면 상태를 돌려줌 | `SceneFlow.PlayStage` |
 | `get_game_state` | 스테이지·상태·턴·보석, 여우 위치·방향, 칸마다 바닥·층·위에 있는 것의 글자 격자, 적·발판의 다음 턴 위치 | `GameManager`, `Board.State`, `MoveRules.Floor` |
 | `act` | w a s d / jump / wait 한 행동. 턴이 끝날 때까지 기다린 뒤 결과와 새 상태 | `FoxController.TryMove / TryJump / TryWait` |
+| `run_actions` | 행동 열(최대 100개)을 순서대로. 한 행동이 끝나야 다음을 시작하고, 클리어·실패가 나오면 거기서 멈춤. 행동마다 한 줄 결과 + 마지막 상태 | `act` 와 같은 입구를 차례로 |
+| `restart_stage` | 지금 스테이지를 처음부터 (R 키와 같음). 움직일 수 있게 되면 상태를 돌려줌 | `GameManager.Restart` |
 | `read_console` | 최근 에러·경고 (원하면 일반 로그도) | `Application.logMessageReceived` |
 | `screenshot` | 게임 화면 + UI 를 PNG 이미지로 (AI 가 화면을 직접 봄) | 테스트의 `TestUtil.Capture` 와 같은 방식 |
 
@@ -33,12 +35,19 @@ Claude Code ──stdio──▶ tools/UnityMcp (.NET 콘솔 MCP 서버) ──T
 dotnet publish tools/UnityMcp -c Release -o tools/UnityMcp/bin/publish
 ```
 
-저장소 루트의 `.mcp.json` 에 `unity` 서버가 등록되어 있습니다. 저장소 루트에서 Claude Code 를 켜고 `/mcp` 로 도구 6개가 보이는지 확인합니다. Unity 에디터에 FoxGame 을 열어 두면 브리지가 자동으로 켜집니다 (`[InitializeOnLoad]`).
+저장소 루트의 `.mcp.json` 에 `unity` 서버가 등록되어 있습니다. 저장소 루트에서 Claude Code 를 켜고 `/mcp` 로 도구 8개가 보이는지 확인합니다. Unity 에디터에 FoxGame 을 열어 두면 브리지가 자동으로 켜집니다 (`[InitializeOnLoad]`).
+
+주의할 점:
+
+- Claude Code 세션이 서버를 띄워 둔 동안은 `bin/publish/UnityMcp.exe` 가 잠겨 있어 publish 가 실패합니다. 세션을 끝내거나 `/mcp` 에서 서버를 끊은 뒤 publish 하세요.
+- 브리지 코드(`Assets/Editor/Mcp`)를 고치면 Unity 에디터 창에 포커스를 줘야 다시 컴파일됩니다. 그 전에는 새 명령이 "모르는 명령" 으로 답합니다.
+- 행동 여러 개를 `act` 로 동시에(병렬 호출) 보내면 순서가 섞입니다. 열을 실행할 때는 `run_actions` 를 쓰세요.
 
 ## 검사
 
-- `dotnet test tools/UnityMcp.Tests`: Unity 없이 가짜 브리지로 MCP 서버 검사 6개 (명령 전달, 한글, 잘못된 행동 거절, 브리지 없을 때 죽지 않음, Play 전환 기다리기, 이미지 반환).
+- `dotnet test tools/UnityMcp.Tests`: Unity 없이 가짜 브리지로 MCP 서버 검사 8개 (명령 전달, 행동 열 정리와 거절, 한글, 잘못된 행동 거절, 브리지 없을 때 죽지 않음, Play 전환 기다리기, 이미지 반환).
 - 실제 에디터 확인 (2026-11-03, Unity 6000.5.7f1): stdio 로 서버를 띄워 `play_mode start` → `load_stage 1` → `act` 14번으로 스테이지 1 클리어 (4/4, 14턴). 그동안 콘솔 에러·경고 없음, 실제 저장 키는 바뀌지 않음.
+- 실제 에디터 확인 (2026-11-03, run_actions·restart_stage): `run_actions d d w w d w s a s s a w jump a` 한 번으로 스테이지 1 클리어 (14/14, 5.8초). 클리어 뒤 `restart_stage` → 턴 0 Playing. 구멍에 빠지는 열은 4/7 에서 멈추고 "상태 GameOver 라서 남은 3개는 실행하지 않음". 실패 뒤 `restart_stage` 도 정상.
 
 ## 구조에서 지킨 것
 
@@ -51,5 +60,6 @@ dotnet publish tools/UnityMcp -c Release -o tools/UnityMcp/bin/publish
 ## 다음에 더할 수 있는 도구
 
 - `validate_stage(n)`: `MapValidator` 결과 (먹을 수 없는 보석).
+- `run_tests`: EditMode·PlayMode 테스트 실행과 결과 요약.
 - `solve_stage(n)`: 최단 풀이의 수와 행동 순서. 16개 스테이지 난이도 곡선을 숫자로.
 - `run_tests`: EditMode·PlayMode 테스트 100개 실행과 결과 요약.

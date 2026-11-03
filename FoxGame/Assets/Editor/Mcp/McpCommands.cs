@@ -9,9 +9,10 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// MCP 브리지가 실행하는 명령. 여는 것은 이 목록뿐이다 (파일 쓰기·씬 저장·임의 코드 실행은 열지 않는다).
-///   ping · play_mode start|stop|status · load_stage n · get_game_state · act w|a|s|d|jump|wait
-///   read_console [개수] [all] · screenshot
-/// act 는 키보드와 같은 입구(FoxController.TryMove/TryJump/TryWait)만 쓴다. 여우를 직접 옮기지 않는다.
+///   ping · play_mode start|stop|status · load_stage n · restart_stage · get_game_state · act w|a|s|d|jump|wait
+///   run_actions a b c ... · read_console [개수] [all] · screenshot
+/// act·run_actions 는 키보드와 같은 입구(FoxController.TryMove/TryJump/TryWait)만 쓴다. 여우를 직접 옮기지 않는다.
+/// restart_stage 는 R 키와 같은 GameManager.Restart 를 부른다.
 /// MCP 로 연 스테이지는 테스트 저장 키를 써서 실제 진행·기록을 건드리지 않는다.
 /// </summary>
 static class McpCommands
@@ -45,9 +46,16 @@ static class McpCommands
                 if (p.Length < 2 || !int.TryParse(p[1], out var stage)) return "사용법: load_stage <번호 1부터>";
                 return LoadStage(stage, out poll, out seconds, out timeoutReply);
 
+            case "restart_stage":
+                return RestartStage(out poll, out seconds, out timeoutReply);
+
             case "act":
                 if (p.Length < 2) return "사용법: act w|a|s|d|jump|wait";
                 return Act(p[1], out poll, out seconds, out timeoutReply);
+
+            case "run_actions":
+                if (p.Length < 2) return "사용법: run_actions w d jump ... (최대 100개)";
+                return RunActions(p.Skip(1).ToArray(), out poll, out seconds, out timeoutReply);
 
             case "screenshot":
                 return Screenshot();
@@ -97,27 +105,106 @@ static class McpCommands
         return null;
     }
 
+    /// <summary>R 키와 같다: 지금 스테이지를 처음부터. 씬이 다시 열리고 움직일 수 있게 되면 상태를 돌려준다.</summary>
+    static string RestartStage(out McpBridge.Poll poll, out double seconds, out string timeoutReply)
+    {
+        poll = null;
+        seconds = 10;
+        timeoutReply = "스테이지를 다시 여는 데 시간이 너무 걸림";
+        if (!EditorApplication.isPlaying) return "Play 중이 아님: 먼저 play_mode start, load_stage";
+        var old = FindGame();
+        if (old == null) return "게임 화면이 아님: load_stage 로 스테이지를 여세요";
+
+        int index = old.StageIndex;
+        SaveData.UseKey(SaveKey);
+        old.Restart();
+        int frames = 0;
+        poll = () =>
+        {
+            if (++frames < 3) return null;
+            var gm = FindGame();
+            if (gm == null || gm == old || gm.StageIndex != index || gm.State == global::GameState.Ready) return null;
+            return "스테이지를 다시 시작함\n\n" + GameState();
+        };
+        return null;
+    }
+
     // ------------------------------------------------------------ 행동
+    static readonly string[] ActionNames = { "w", "a", "s", "d", "jump", "wait" };
+
     static string Act(string action, out McpBridge.Poll poll, out double seconds, out string timeoutReply)
     {
         poll = null;
         seconds = 8;
         timeoutReply = "행동이 끝나지 않음 (애니메이션이 멈췄거나 일시정지)";
         if (!EditorApplication.isPlaying) return "Play 중이 아님: 먼저 play_mode start, load_stage";
-        var gm = FindGame();
-        if (gm == null) return "게임 화면이 아님: load_stage 로 스테이지를 여세요";
+        if (FindGame() == null) return "게임 화면이 아님: load_stage 로 스테이지를 여세요";
+        if (Array.IndexOf(ActionNames, action) < 0) return "행동은 w, a, s, d, jump, wait 중 하나";
 
+        var one = ActPoll(action);
+        poll = () =>
+        {
+            var r = one();
+            return r == null ? null : $"행동 {action}: {r}\n\n{GameState()}";
+        };
+        return null;
+    }
+
+    /// <summary>
+    /// 행동 여러 개를 순서대로. 한 행동이 끝나야 다음을 시작하고, 클리어·실패·막힘이 아닌 멈춤(일시정지 등)이 나오면 거기서 멈춘다.
+    /// 답은 행동마다 한 줄 결과, 마지막에 상태.
+    /// </summary>
+    static string RunActions(string[] actions, out McpBridge.Poll poll, out double seconds, out string timeoutReply)
+    {
+        poll = null;
+        seconds = 8 * actions.Length + 2;
+        timeoutReply = "행동이 끝나지 않음 (애니메이션이 멈췄거나 일시정지)";
+        if (!EditorApplication.isPlaying) return "Play 중이 아님: 먼저 play_mode start, load_stage";
+        if (FindGame() == null) return "게임 화면이 아님: load_stage 로 스테이지를 여세요";
+        if (actions.Length > 100) return "행동은 한 번에 100개까지";
+        foreach (var a in actions)
+            if (Array.IndexOf(ActionNames, a) < 0) return $"모르는 행동 \"{a}\": w, a, s, d, jump, wait 중 하나";
+
+        var log = new StringBuilder();
+        int i = 0;
+        McpBridge.Poll current = null;
+        string Finish(string note)
+        {
+            if (note != null) log.AppendLine(note);
+            return $"{i}/{actions.Length} 행동 실행\n{log}\n{GameState()}";
+        }
+        poll = () =>
+        {
+            if (current == null)
+            {
+                if (i >= actions.Length) return Finish(null);
+                current = ActPoll(actions[i]);
+            }
+            var r = current();
+            if (r == null) return null;
+            log.AppendLine($"{i + 1}. {actions[i]}: {r}");
+            current = null;
+            i++;
+            var g = FindGame();
+            if (g == null) return Finish("게임 화면이 사라져 멈춤");
+            if (g.State != global::GameState.Playing) return Finish(i < actions.Length ? $"상태 {g.State} 라서 남은 {actions.Length - i}개는 실행하지 않음" : null);
+            return null;   // 다음 행동은 다음 프레임에
+        };
+        return null;
+    }
+
+    /// <summary>행동 하나를 시작하고 끝날 때까지 기다리는 폴. 결과는 한 줄 요약(상태 없음).</summary>
+    static McpBridge.Poll ActPoll(string action)
+    {
         Vector2Int? dir = action switch
         {
             "w" => Vector2Int.up, "s" => Vector2Int.down, "a" => Vector2Int.left, "d" => Vector2Int.right,
             _ => null,
         };
-        if (dir == null && action != "jump" && action != "wait") return "행동은 w, a, s, d, jump, wait 중 하나";
-
         bool started = false;
         Vector2Int fromCell = default;
         int fromTurn = 0, fromGems = 0;
-        poll = () =>
+        return () =>
         {
             var g = FindGame();
             if (g == null) return "게임 화면이 사라짐";
@@ -125,8 +212,8 @@ static class McpCommands
             if (!started)
             {
                 if (g.State == global::GameState.Ready || fox.IsBusy) return null;   // 시작 연출이 끝날 때까지
-                if (g.State != global::GameState.Playing) return $"지금은 움직일 수 없음 (상태 {g.State})\n\n" + GameState();
-                if (g.IsPaused) return "일시정지 중";
+                if (g.State != global::GameState.Playing) return $"지금은 움직일 수 없음 (상태 {g.State})";
+                if (g.IsPaused) return "일시정지 중이라 실행하지 않음";
                 fromCell = fox.Cell;
                 fromTurn = g.board.State.turn;
                 fromGems = g.Collected;
@@ -140,17 +227,14 @@ static class McpCommands
             if (g.State == global::GameState.Playing && fox.HasFallen) return null;   // 떨어지는 중
 
             var sb = new StringBuilder();
-            sb.Append($"행동 {action}: ");
             if (g.State == global::GameState.Cleared) sb.Append("클리어!");
             else if (g.State == global::GameState.GameOver) sb.Append(fox.WasHit ? "적과 부딪혀 실패" : "떨어져서 실패");
             else if (fox.Cell == fromCell && g.board.State.turn == fromTurn) sb.Append("막힘 (턴이 지나지 않음, 바라보는 방향만 바뀜)");
             else if (fox.Cell == fromCell) sb.Append("제자리 (한 턴 지남)");
             else sb.Append($"{Fmt(fromCell)} → {Fmt(fox.Cell)}");
             if (g.Collected > fromGems) sb.Append($", 보석 +{g.Collected - fromGems}");
-            sb.Append("\n\n").Append(GameState());
             return sb.ToString();
         };
-        return null;
     }
 
     // ------------------------------------------------------------ 상태

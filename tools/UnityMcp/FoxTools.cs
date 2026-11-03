@@ -45,6 +45,24 @@ public static class FoxTools
             ? Bridge.Send($"act {action}")
             : "action 은 w, a, s, d, jump, wait 중 하나";
 
+    [McpServerTool(Name = "run_actions"), Description(
+        "행동 여러 개를 순서대로 실행한다 (최대 100개). 공백이나 쉼표로 나눈 w a s d jump wait 의 열, 예: \"d d w jump a\". " +
+        "한 행동이 끝나야 다음을 시작하므로 순서가 섞이지 않는다. 클리어·실패가 나오면 거기서 멈춘다. " +
+        "행동마다 한 줄 결과와 마지막 게임 상태를 돌려준다.")]
+    public static string RunActions([Description("공백 또는 쉼표로 나눈 행동 열, 예: d d w jump")] string actions)
+    {
+        var list = actions.Split([' ', ',', '\n', '\t'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (list.Length == 0) return "행동이 없음: 예 \"d d w jump\"";
+        if (list.Length > 100) return "행동은 한 번에 100개까지";
+        var bad = list.FirstOrDefault(a => a is not ("w" or "a" or "s" or "d" or "jump" or "wait"));
+        if (bad != null) return $"모르는 행동 \"{bad}\": w, a, s, d, jump, wait 중 하나";
+        return Bridge.Send("run_actions " + string.Join(' ', list), TimeSpan.FromSeconds(8 * list.Length + 12));
+    }
+
+    [McpServerTool(Name = "restart_stage"), Description(
+        "지금 스테이지를 처음부터 다시 시작한다 (R 키와 같음). 시작 연출이 끝나 움직일 수 있게 되면 게임 상태를 돌려준다.")]
+    public static string RestartStage() => Bridge.Send("restart_stage");
+
     [McpServerTool(Name = "read_console", ReadOnly = true), Description(
         "Unity 콘솔의 최근 로그를 읽는다. 기본은 에러와 경고만. includeInfo 가 true 면 일반 로그도.")]
     public static string ReadConsole(
